@@ -20,7 +20,6 @@ if __name__ == "__main__":
     print('len(reactions)', len(reactions))
 
     valence_cache = {}
-    valence_counter = collections.Counter()
     for i in range(len(reactions)):
     #         get reaction
         reaction = reactions[i]
@@ -63,27 +62,6 @@ if __name__ == "__main__":
             else:
                 tmp_comp['valence'] = valence
 
-
-            if not tmp_mat_obj:
-                valence_counter['none target'] += 1
-
-            if len(valence) == 1:
-                valence_counter[
-                    'valence eles == comp eles {}'.format(
-                        set(valence[0]['valence'].keys()) == set(tmp_mat_obj.composition.keys())
-                    )
-                ] += 1
-
-            valence_counter[len(valence)] += 1  
-            if (len(valence) == 0
-                and tmp_mat_obj
-                and 'O' not in tmp_mat_obj.composition):
-                valence_counter['no valence, possibly alloy'] += 1
-
-
-
-
-
     #     precursor
         for tmp_pre in reaction['precursors']:
             for tmp_comp in tmp_pre['composition']:
@@ -113,14 +91,8 @@ if __name__ == "__main__":
                 elif len(valence) == 0:
                     tmp_comp['valence'] = None
                 else:
-                    tmp_comp['valence'] = valence
-
-
-                valence_counter[len(valence)] += 1  
-
-        
-            
-    print(valence_counter)
+                    tmp_comp['valence'] = valence  
+                    
     if not os.path.exists('generated'):
         os.mkdir('generated')
     with open('generated/upload_v10_w_valence.json', 'w') as fw:
