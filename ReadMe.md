@@ -28,20 +28,15 @@ Example:
 
 For detailed code please refer to example/example.py. The script examples.py read in our current database and add a new field `valence` in the `composition` field for each material. The returned value would be as following if the valence could be solved. The `valence` is a list because there could be multiple composition instances when there are variables in the formula. Each element in the `valence` filed is a dict which specify the valence state, values for variables and corresponding composition. Sometimes, the valence state is not solved successfully. The value of `valence` would be None.
 
-    [{'amount': '1.0',
-      'elements': {'Bi': 'x + 2.5', 'Na': '-x + 0.5', 'Nb': '2.0', 'O': '9.0'},
-      'formula': 'Na0.5-xBi2.5+xNb2O9',
-      'valence': [{'amounts_vars': [{'x': 0.05}],
-                   'elements': [{'Bi': 2.55, 'Na': 0.45, 'Nb': 2.0, 'O': 9.0}],
-                   'valence': {'Bi': 3.0, 'Na': 1.0, 'Nb': 4.95, 'O': -2.0}},
-                  {'amounts_vars': [{'x': 0.1}],
-                   'elements': [{'Bi': 2.6, 'Na': 0.4, 'Nb': 2.0, 'O': 9.0}],
-                   'valence': {'Bi': 3.0, 'Na': 1.0, 'Nb': 4.9, 'O': -2.0}}]}]
-
-    'composition': [{'amount': '1.0',
-                  'elements': {'C': '1.0',
-                               'O': '3.0',
-                               'Sr': '1.0'},
-                  'formula': 'SrCO3',
-                  'valence': {'C': 4.0, 'O': -2.0, 'Sr': 2.0}}]
-
+    'composition': [
+        { 'amount': '1.0',
+          'elements': {'Bi': 'x + 2.5', 'Na': '-x + 0.5', 'Nb': '2.0', 'O': '9.0'},
+          'formula': 'Na0.5-xBi2.5+xNb2O9',
+          'valence': [{'amounts_vars': [{'x': 0.05}],
+                       'elements': [{'Bi': 2.55, 'Na': 0.45, 'Nb': 2.0, 'O': 9.0}],
+                       'valence': {'Bi': 3.0, 'Na': 1.0, 'Nb': 4.95, 'O': -2.0}d},
+                      {'amounts_vars': [{'x': 0.1}],
+                       'elements': [{'Bi': 2.6, 'Na': 0.4, 'Nb': 2.0, 'O': 9.0}],
+                       'valence': {'Bi': 3.0, 'Na': 1.0, 'Nb': 4.9, 'O': -2.0}}]}
+    ]
+    
