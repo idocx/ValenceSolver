@@ -12,56 +12,36 @@ Install:
     git clone git@github.com:CederGroupHub/ValenceSolver.git
     cd ValenceSolver
     pip install -e .
+    
+Usage: 
 
-Example usage: 
+The minimal code is as following. We first create a `GeneralComposition` object using `Synthepedia`. `GeneralComposition` is able to generate all composition instances by substituting varibles in formula and to check if the stoichiometric number is valid (should not be negative) after substitution. Then, we solve the valence by calling `get_material_valence(tmp_mat_obj, valence_cache=valence_cache)`. The valence_cache is optional, which is designed to save solved cases to avoid duplication in the future. It can be initialized as an emtpy dict and the value would be updated automatically after calling `get_material_valence`.  
 
-For detailed code please refer to example/example.py. The script examples.py read in our current database and add a new field `valence` in the `composition` field for each material. There are some explanations on the returned values. 
+    tmp_mat_obj = to_GeneralMat_obj(
+        composition=composition,
+        amounts_vars=amounts_vars,
+        elements_vars=elements_vars
+    )
+    valence = get_material_valence(tmp_mat_obj, valence_cache=valence_cache)
 
-(1) Normally, the modified data is as below, the value of `valence` is a dict similar to `elements`.
+Example: 
+
+For detailed code please refer to example/example.py. The script examples.py read in our current database and add a new field `valence` in the `composition` field for each material. The returned value would be as following if the valence could be solved. The `valence` is a list because there could be multiple composition instances when there are variables in the formula. Each element in the `valence` filed is a dict which specify the valence state, values for variables and corresponding composition. Sometimes, the valence state is not solved successfully. The value of `valence` would be None.
+
+    [{'amount': '1.0',
+      'elements': {'Bi': 'x + 2.5', 'Na': '-x + 0.5', 'Nb': '2.0', 'O': '9.0'},
+      'formula': 'Na0.5-xBi2.5+xNb2O9',
+      'valence': [{'amounts_vars': [{'x': 0.05}],
+                   'elements': [{'Bi': 2.55, 'Na': 0.45, 'Nb': 2.0, 'O': 9.0}],
+                   'valence': {'Bi': 3.0, 'Na': 1.0, 'Nb': 4.95, 'O': -2.0}},
+                  {'amounts_vars': [{'x': 0.1}],
+                   'elements': [{'Bi': 2.6, 'Na': 0.4, 'Nb': 2.0, 'O': 9.0}],
+                   'valence': {'Bi': 3.0, 'Na': 1.0, 'Nb': 4.9, 'O': -2.0}}]}]
 
     'composition': [{'amount': '1.0',
                   'elements': {'C': '1.0',
                                'O': '3.0',
                                'Sr': '1.0'},
                   'formula': 'SrCO3',
-                  'valence': {'C': 4.0, 'O': -2.0, 'Sr': 2.0}}],
-
-(2) Sometimes, the valence state is not solved successfully. The value of `valence` would be None. 
-
-    [{'amount': '1.0',
-      'elements': {'Mn': 'y + 4', 'O': '3.0', 'Sr': '1.0', 'Ti': '-y + 1'},
-      'formula': 'SrTi1-yMn4+yO3',
-      'valence': None}]
-
-(3) Sometimes, there are multiple instances corresponding to one material when there is a variable. If the valence states are the same for all the instances, the value of `valence` is still a dict as (1). Otherwise, the value of `valence` is a list including valence states for each instance. 
-
-    [{'amount': '1.0',
-      'elements': {'Bi': 'x + 2.5', 'Na': '-x + 0.5', 'Nb': '2.0', 'O': '9.0'},
-      'formula': 'Na0.5-xBi2.5+xNb2O9',
-      'valence': [{'amounts_vars': {'x': 0.05},
-                   'elements': {'Bi': 2.55, 'Na': 0.45, 'Nb': 2.0, 'O': 9.0},
-                   'valence': {'Bi': 3.0, 'Na': 1.0, 'Nb': 4.95, 'O': -2.0}},
-                  {'amounts_vars': {'x': 0.1},
-                   'elements': {'Bi': 2.6, 'Na': 0.4, 'Nb': 2.0, 'O': 9.0},
-                   'valence': {'Bi': 3.0, 'Na': 1.0, 'Nb': 4.9, 'O': -2.0}}]}]
-
-(4) Sometimes, valence states are not solved for every elements because the material contains a variable and the value of this variable is zero. To specify this situation, the value of `valence` is a also list including valence states and the values of variables. 
-
-    [{'amount': '1.0',
-      'elements': {'Ba': '1.0',
-                   'Ge': 'y',
-                   'O': '3.0',
-                   'Sn': 'x',
-                   'Ti': '-x - y + 1'},
-      'formula': 'BaTi1-x-ySnxGeyO3',
-      'valence': [{'amounts_vars': {'x': 0.0, 'y': 0.05},
-                   'elements': {'Ba': 1.0, 'Ge': 0.05, 'O': 3.0, 'Ti': 0.95},
-                   'valence': {'Ba': 2.0, 'Ge': 4.0, 'O': -2.0, 'Ti': 4.0}},
-                  {'amounts_vars': {'x': 0.0, 'y': 0.0},
-                   'elements': {'Ba': 1.0, 'O': 3.0, 'Ti': 1.0},
-                   'valence': {'Ba': 2.0, 'Ge': 4.0, 'O': -2.0, 'Ti': 4.0}}]}]
-
-
-
-
+                  'valence': {'C': 4.0, 'O': -2.0, 'Sr': 2.0}}]
 

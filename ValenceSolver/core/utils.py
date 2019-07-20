@@ -3,8 +3,8 @@ import re
 from unidecode import unidecode
 import collections
 from sympy.parsing.sympy_parser import parse_expr
+from copy import deepcopy
 
-import Synthepedia
 from Synthepedia.concepts.materials.complex import GeneralComposition
 from .composition_inhouse import CompositionInHouse
 
@@ -65,30 +65,42 @@ def get_composition_dict(struct_list, elements_vars = {}):
     return combined_comp
 
 
-def to_GeneralMat_obj(dataset_mat, elements_vars={}):
+def to_GeneralMat_obj(composition, amounts_vars={}, elements_vars={}):
+    """
+    composition is either a single dict as following or a list of such dicts.
+        e.g.     {'amount': '1.0',
+                 'elements': {'Fe': '12.0',
+                              'O': '24.0',
+                              'Sr': '6.0'},
+                    ... }
+    """
     #     goal
     mat_obj = None
     fraction_vars = {}
     contain_vars = False
-    composition = None
+
+    # put composition in a list if it is a dict
+    raw_composition = deepcopy(composition)
+    if isinstance(raw_composition, dict):
+        raw_composition['amount'] = '1.0'
+        raw_composition = [raw_composition]
     
-    #     get composition
+    #     get composition after substituting elements variables (e.g. RE -> La)
     composition = get_composition_dict(
-        dataset_mat['composition'],
+        raw_composition,
         elements_vars = elements_vars
     )
 
     # get fraction_vars/amounts_vars
-        
     # assign fraction_vars
     symbol_replace_dict = {}
     # get value of each variable
-    for k, v in dataset_mat['amounts_vars'].items():
+    for k, v in amounts_vars.items():
         # greek symbol is not supported by sympy, convert to alphabetical one            
         new_k = unidecode(k)
         if new_k != k:
             new_k = 'greek_' + new_k
-            assert new_k not in dataset_mat['amounts_vars']
+            assert new_k not in amounts_vars
             symbol_replace_dict[k] = new_k
 
         # get value as a list or a range
@@ -122,7 +134,7 @@ def to_GeneralMat_obj(dataset_mat, elements_vars={}):
             all_vars.update(set([str(x) for x in tmp_expr.free_symbols]))
         except:
             pass
-    extra_vars = all_vars - set(dataset_mat['amounts_vars'].keys())
+    extra_vars = all_vars - set(amounts_vars.keys())
     
     for x in extra_vars:
         # guess del_O as 0.0
@@ -149,6 +161,7 @@ def to_GeneralMat_obj(dataset_mat, elements_vars={}):
         pass
 
     # check mat_obj is correctly generated
+    # because some value of variables might be improper
     try:
         # some value of variables is incredibly large and make the number of element to be negative
         # set skip_wrong_composition = True to skip those wrong values
@@ -161,8 +174,7 @@ def to_GeneralMat_obj(dataset_mat, elements_vars={}):
         mat_obj = None
     return mat_obj
 
-
-def merge_valence(valence_combos):
+def merge_valence_as_one(valence_combos):
     valence_all_ele = {}
     could_merge = True
     for combo in valence_combos:
@@ -175,17 +187,45 @@ def merge_valence(valence_combos):
             valence_all_ele[ele] = valence_all_ele[ele][0]
         else:
             could_merge = False
-    if could_merge and valence_all_ele:
+            break
+    if not len(valence_all_ele):
+        could_merge = False
+    if not could_merge:
+        valence_all_ele = None
+    return could_merge, valence_all_ele
+
+def merge_same_valence(valence_combos):
+    valence_dict = {}
+    merged_valence = []
+    for combo in valence_combos:
+        valence_key = str(dictOrdered(combo['valence']))
+        if valence_key not in valence_dict:
+            valence_dict[valence_key] = []
+        valence_dict[valence_key].append(combo)
+    for k, v in valence_dict.items():
+        merged_valence.append({
+            'valence': v[0]['valence'],
+            'amounts_vars': [],
+            'elements': [],
+        })
+        for combo in v:
+            merged_valence[-1]['amounts_vars'].append(combo['amounts_vars'])
+            merged_valence[-1]['elements'].append(combo['elements'])
+    return merged_valence
+
+def merge_valence(valence_combos):
+    could_merge, valence_all_ele = merge_valence_as_one(valence_combos)
+    if could_merge:
         return [{
             'valence': valence_all_ele, 
             'amounts_vars': [combo['amounts_vars'] for combo in valence_combos],
             'elements': [combo['elements'] for combo in valence_combos],
         }]
     else:
-        return valence_combos
+        return merge_same_valence(valence_combos)
         
         
-def get_target_valence(material, valence_cache={}):
+def get_material_valence(material, valence_cache={}):
     target_valence = None
     if material:
         # some value of variables is incredibly large and make the number of element to be negative
@@ -228,9 +268,10 @@ def get_target_valence(material, valence_cache={}):
                 'elements': tmp_comp.composition,
             })
             
-    if len(all_valence) > 1:
-        all_valence = merge_valence(all_valence)
-        
+    all_valence = merge_valence(all_valence)
+    if len(all_valence) == 0:
+        all_valence = None
+
     return all_valence
     
 
