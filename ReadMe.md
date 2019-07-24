@@ -26,7 +26,7 @@ The minimal code is as following. We first create a `GeneralComposition` object 
 
 Example: 
 
-For detailed code please refer to example/example.py. The script examples.py read in our current database and add a new field `valence` in the `composition` field for each material. The returned value would be as following if the valence could be solved. The `valence` is a list because there could be multiple composition instances when there are variables in the formula. Each element in the `valence` filed is a dict which specify the valence state, values for variables and corresponding composition. Sometimes, the valence state is not solved successfully. The value of `valence` would be None.
+For detailed code please refer to example/example_for_reactions.py. The script examples_for_reactions.py read in our current database and add a new field `valence` in the `composition` field for each material as following. The returned value would be as following if the valence could be solved. The `valence` is a list because there could be multiple composition instances when there are variables in the formula. Each element in the `valence` filed is a dict which specify the valence state and values for variables. Sometimes, the valence state is not solved successfully. The value of `valence` would be None.
 
     'composition': [
         { 'amount': '1.0',

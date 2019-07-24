@@ -57,5 +57,5 @@ if __name__ == "__main__":
 
     if not os.path.exists('generated'):
         os.mkdir('generated')
-    with open('generated/upload_v10_w_valence_test.json', 'w') as fw:
+    with open('generated/upload_v10_w_valence.json', 'w') as fw:
         json.dump(reactions, fw, indent=2)
