@@ -19,7 +19,8 @@ With a composition dict or a plain formula, the minimal code is as following. (e
 
     from ValenceSolver.core.composition_inhouse import CompositionInHouse
 
-    valence_comp = CompositionInHouse(formula)
+    # The composition here is a plain dict like {'ele': number} without variables. 
+    valence_comp = CompositionInHouse(composition)
     valence_comp, inte_factor = valence_comp.get_integer_formula_and_factor()
     valence_comp = CompositionInHouse(valence_comp)
     oxi_state = valence_comp.oxi_state_guesses_most_possible(all_oxi_states=False)
