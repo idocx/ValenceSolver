@@ -15,8 +15,19 @@ Install:
     
 Usage: 
 
-The minimal code is as following. We first create a `GeneralComposition` object using `Synthepedia`. `GeneralComposition` is able to generate all composition instances by substituting varibles in formula and to check if the stoichiometric number is valid (should not be negative) after substitution. Then, we solve the valence by calling `get_material_valence(tmp_mat_obj, valence_cache=valence_cache)`. The valence_cache is optional, which is designed to save solved cases to avoid duplication in the future. It can be initialized as an emtpy dict and the value would be updated automatically after calling `get_material_valence`.  
+With a composition dict or a plain formula, the minimal code is as following. (example in example/example_for_composition.py)
 
+    from ValenceSolver.core.composition_inhouse import CompositionInHouse
+
+    valence_comp = CompositionInHouse(formula)
+    valence_comp, inte_factor = valence_comp.get_integer_formula_and_factor()
+    valence_comp = CompositionInHouse(valence_comp)
+    oxi_state = valence_comp.oxi_state_guesses_most_possible(all_oxi_states=False)
+
+The minimal code is as following. We first create a `GeneralComposition` object using `Synthepedia`. `GeneralComposition` is able to generate all composition instances by substituting varibles in formula and to check if the stoichiometric number is valid (should not be negative) after substitution. Then, we solve the valence by calling `get_material_valence(tmp_mat_obj, valence_cache=valence_cache)`. The valence_cache is optional, which is designed to save solved cases to avoid duplication in the future. It can be initialized as an emtpy dict and the value would be updated automatically after calling `get_material_valence`. (example in example/example_for_reactions.py)
+
+    from ValenceSolver.core.utils import to_GeneralMat_obj, get_material_valence
+    
     tmp_mat_obj = to_GeneralMat_obj(
         composition=composition,
         amounts_vars=amounts_vars,
