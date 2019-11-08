@@ -44,11 +44,14 @@ def get_valence_plain_dict(composition):
     print(composition, oxi_state)
     return oxi_state
 
-def get_valence_plain_formula(formula):
+def get_valence_plain_formula(formula, add_zero_valence=False):
     valence_comp = CompositionInHouse(formula)
     valence_comp, inte_factor = valence_comp.get_integer_formula_and_factor()
     valence_comp = CompositionInHouse(valence_comp)
-    oxi_state = valence_comp.oxi_state_guesses_most_possible(all_oxi_states=False)
+    oxi_state = valence_comp.oxi_state_guesses_most_possible(
+        all_oxi_states=False,
+        add_zero_valence=add_zero_valence
+    )
     print(formula, oxi_state)
     return oxi_state
 
@@ -60,4 +63,15 @@ if __name__ == '__main__':
         "O": 3.0,
     }
     get_valence_plain_dict(composition)
-    get_valence_plain_formula('YFeO3')
+    add_zero_valence = True
+    get_valence_plain_formula('YFeO3', add_zero_valence=add_zero_valence)
+    get_valence_plain_formula('Y0.1Fe1.9O3', add_zero_valence=add_zero_valence)
+    get_valence_plain_formula('Y0.1Fe2O3', add_zero_valence=add_zero_valence)
+    get_valence_plain_formula('Y0.2Fe2O3',
+                              add_zero_valence=add_zero_valence)
+    get_valence_plain_formula('Y0.5Fe2O3',
+                              add_zero_valence=add_zero_valence)
+    get_valence_plain_formula('Fe1.9Y2.0O3',
+                              add_zero_valence=add_zero_valence)
+    get_valence_plain_formula('YFe2O3', add_zero_valence=add_zero_valence)
+    get_valence_plain_formula('Eu0.1Y2O3', add_zero_valence=add_zero_valence)

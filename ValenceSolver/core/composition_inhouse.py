@@ -217,8 +217,13 @@ class CompositionInHouse(Composition):
 
         return all_sols
 
-    def oxi_state_guesses_most_possible(self, oxi_states_override=None, target_charge=0,
-                          all_oxi_states=False, max_sites=None):
+    def oxi_state_guesses_most_possible(self,
+                                        oxi_states_override=None,
+                                        target_charge=0,
+                                        all_oxi_states=False,
+                                        max_sites=None,
+                                        add_zero_valence=False,
+                                        add_env_valence=False):
         """
         Checks if the composition is charge-balanced and returns back all
         charge-balanced oxidation state combinations. Composition must have
@@ -302,9 +307,17 @@ class CompositionInHouse(Composition):
                 oxids = Element(el).icsd_oxidation_states or \
                         Element(el).oxidation_states
 
+            if add_zero_valence and 0 not in oxids:
+                oxids = list(oxids)
+                oxids.append(0)
             all_oxids[el] = oxids
 
-        solution, score = CompositionInHouse.get_most_possible_solution(els, all_oxids, el_amt)
+        solution, score = CompositionInHouse.get_most_possible_solution(
+            els,
+            all_oxids,
+            el_amt,
+            add_zero_valence=add_zero_valence,
+        )
         if solution:
             all_sols = [solution]
             all_scores = [score]
@@ -346,7 +359,10 @@ class CompositionInHouse(Composition):
         return all_sums, all_scores
 
     @staticmethod
-    def get_most_possible_solution(all_els, all_oxi_states, all_el_amts):
+    def get_most_possible_solution(all_els,
+                                   all_oxi_states,
+                                   all_el_amts,
+                                   add_zero_valence=False):
         # goal
         solution = {}
         score = 0
@@ -356,6 +372,8 @@ class CompositionInHouse(Composition):
         for el in all_els:
             oxi_names.extend([el+str(tmp_state) for tmp_state in all_oxi_states[el]])
             costs.update({el+str(tmp_state): Composition.oxi_prob.get(Specie(el, tmp_state), 0) for tmp_state in all_oxi_states[el]})
+            if add_zero_valence:
+                costs[el+str(0)] = 0.1/all_el_amts[el]
 
         # definition of problem
         problem = pulp.LpProblem('score maximization problem', pulp.LpMaximize)
