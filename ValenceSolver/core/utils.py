@@ -16,6 +16,24 @@ __email__ = 'tanjin_he@berkeley.edu'
 def dictOrdered(unordered_dict):
     return collections.OrderedDict(sorted(unordered_dict.items(), key=lambda x:x[0]))
 
+
+def get_valence_single_composition(composition,
+                                   add_zero_valence=False):
+    """
+
+    :param composition: can be a plain dict or a plain string that pymatgen can interpret
+    :return: oxi_state is a dict
+    """
+    valence_comp = CompositionInHouse(composition)
+    valence_comp, inte_factor = valence_comp.get_integer_formula_and_factor()
+    valence_comp = CompositionInHouse(valence_comp)
+    oxi_state = valence_comp.oxi_state_guesses_most_possible(
+        all_oxi_states=False,
+        add_zero_valence=add_zero_valence,
+    )
+    return oxi_state
+
+
 def get_composition_dict(struct_list, elements_vars = {}):
     """
     struct_list is from 'composition' field 
@@ -225,7 +243,7 @@ def merge_valence(valence_combos):
         return merge_same_valence(valence_combos)
         
         
-def get_material_valence(material, valence_cache={}):
+def get_material_valence(material, valence_cache={}, add_zero_valence=False):
     target_valence = None
     if material:
         # some value of variables is incredibly large and make the number of element to be negative
@@ -252,7 +270,7 @@ def get_material_valence(material, valence_cache={}):
                 valence_comp = CompositionInHouse(tmp_comp.composition)
                 valence_comp, inte_factor = valence_comp.get_integer_formula_and_factor()
                 valence_comp = CompositionInHouse(valence_comp)
-                oxi_state = valence_comp.oxi_state_guesses_most_possible(all_oxi_states=False)
+                oxi_state = valence_comp.oxi_state_guesses_most_possible(all_oxi_states=False, add_zero_valence=add_zero_valence)
             except:
                 oxi_state = None
             if oxi_state and oxi_state[0]:
