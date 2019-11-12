@@ -18,6 +18,7 @@ def dictOrdered(unordered_dict):
 
 
 def get_valence_single_composition(composition,
+                                   all_oxi_states=False,
                                    add_zero_valence=False):
     """
 
@@ -28,7 +29,7 @@ def get_valence_single_composition(composition,
     valence_comp, inte_factor = valence_comp.get_integer_formula_and_factor()
     valence_comp = CompositionInHouse(valence_comp)
     oxi_state = valence_comp.oxi_state_guesses_most_possible(
-        all_oxi_states=False,
+        all_oxi_states=all_oxi_states,
         add_zero_valence=add_zero_valence,
     )
     return oxi_state

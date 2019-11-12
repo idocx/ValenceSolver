@@ -371,9 +371,11 @@ class CompositionInHouse(Composition):
         costs = {}
         for el in all_els:
             oxi_names.extend([el+str(tmp_state) for tmp_state in all_oxi_states[el]])
-            costs.update({el+str(tmp_state): Composition.oxi_prob.get(Specie(el, tmp_state), 0) for tmp_state in all_oxi_states[el]})
+            costs.update({el+str(tmp_state): Composition.oxi_prob.get(Specie(el, tmp_state), -10000) for tmp_state in all_oxi_states[el]})
             if add_zero_valence:
-                costs[el+str(0)] = 0.1/all_el_amts[el]
+                # TODO: include Oxygen anion or not
+                costs[el+"0"] = 0.1/all_el_amts[el]
+        print(costs)
 
         # definition of problem
         problem = pulp.LpProblem('score maximization problem', pulp.LpMaximize)
@@ -389,6 +391,8 @@ class CompositionInHouse(Composition):
         problem.solve()
         if pulp.LpStatus[problem.status] == 'Optimal':
             for el in all_els:
+                for tmp_state in all_oxi_states[el]:
+                    print(el+str(tmp_state), pulp.value(oxi_vars[el+str(tmp_state)]))
                 solution[el] = pulp.value(pulp.lpSum([tmp_state*oxi_vars[el+str(tmp_state)] for tmp_state in all_oxi_states[el]]))/float(all_el_amts[el])
             score = pulp.value(problem.objective)
 
