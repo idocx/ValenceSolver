@@ -76,6 +76,7 @@ class CompositionInHouse(Composition):
     7.0
     """
 
+
     def __init__(self, *args, **kwargs):  # allow_negative=False
         """
         Very flexible Composition construction, similar to the built-in Python
@@ -220,10 +221,11 @@ class CompositionInHouse(Composition):
     def oxi_state_guesses_most_possible(self,
                                         oxi_states_override=None,
                                         target_charge=0,
+                                        all_metal_oxi_states=False,
                                         all_oxi_states=False,
                                         max_sites=None,
                                         add_zero_valence=False,
-                                        add_env_valence=False):
+                                        add_compensator=False):
         """
         Checks if the composition is charge-balanced and returns back all
         charge-balanced oxidation state combinations. Composition must have
@@ -303,6 +305,15 @@ class CompositionInHouse(Composition):
                 oxids = oxi_states_override[el]
             elif all_oxi_states:
                 oxids = Element(el).oxidation_states
+            elif all_metal_oxi_states:
+                # icsd_oxidation_states + positive valence in all_oxi_states
+                oxids = Element(el).icsd_oxidation_states
+                if Element(el).is_metal:
+                    all_positive = set(filter(
+                        lambda x: x>0,
+                        Element(el).oxidation_states
+                    ))
+                    oxids = tuple(set(oxids) | all_positive)
             else:
                 oxids = Element(el).icsd_oxidation_states or \
                         Element(el).oxidation_states
@@ -311,12 +322,17 @@ class CompositionInHouse(Composition):
                 oxids = list(oxids)
                 oxids.append(0)
             all_oxids[el] = oxids
+        if add_compensator and 'O' in el_amt:
+            el_amt['X'] = el_amt['O']
+            els = el_amt.keys()
+            all_oxids['X'] = (-1, 0, 1)
 
         solution, score = CompositionInHouse.get_most_possible_solution(
             els,
             all_oxids,
             el_amt,
             add_zero_valence=add_zero_valence,
+            add_compensator=add_compensator,
         )
         if solution:
             all_sols = [solution]
@@ -362,7 +378,8 @@ class CompositionInHouse(Composition):
     def get_most_possible_solution(all_els,
                                    all_oxi_states,
                                    all_el_amts,
-                                   add_zero_valence=False):
+                                   add_zero_valence=False,
+                                   add_compensator=False):
         # goal
         solution = {}
         score = 0
@@ -371,10 +388,15 @@ class CompositionInHouse(Composition):
         costs = {}
         for el in all_els:
             oxi_names.extend([el+str(tmp_state) for tmp_state in all_oxi_states[el]])
-            costs.update({el+str(tmp_state): Composition.oxi_prob.get(Specie(el, tmp_state), -10000) for tmp_state in all_oxi_states[el]})
+            if el in Element.__members__:
+                costs.update({el+str(tmp_state): Composition.oxi_prob.get(Specie(el, tmp_state), -10000) for tmp_state in all_oxi_states[el]})
             if add_zero_valence:
                 # TODO: include Oxygen anion or not
                 costs[el+"0"] = 0.1/all_el_amts[el]
+            if add_compensator:
+                costs['X0'] = 10000
+                costs['X1'] = 1
+                costs['X-1'] = 1
         print(costs)
 
         # definition of problem
@@ -392,7 +414,9 @@ class CompositionInHouse(Composition):
         if pulp.LpStatus[problem.status] == 'Optimal':
             for el in all_els:
                 for tmp_state in all_oxi_states[el]:
-                    print(el+str(tmp_state), pulp.value(oxi_vars[el+str(tmp_state)]))
+                    if pulp.value(oxi_vars[el+str(tmp_state)]) \
+                            != 0:
+                        print(el+str(tmp_state), pulp.value(oxi_vars[el+str(tmp_state)]))
                 solution[el] = pulp.value(pulp.lpSum([tmp_state*oxi_vars[el+str(tmp_state)] for tmp_state in all_oxi_states[el]]))/float(all_el_amts[el])
             score = pulp.value(problem.objective)
 

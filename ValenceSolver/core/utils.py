@@ -18,8 +18,10 @@ def dictOrdered(unordered_dict):
 
 
 def get_valence_single_composition(composition,
+                                   all_metal_oxi_states=False,
                                    all_oxi_states=False,
-                                   add_zero_valence=False):
+                                   add_zero_valence=False,
+                                   add_compensator=False):
     """
 
     :param composition: can be a plain dict or a plain string that pymatgen can interpret
@@ -29,8 +31,10 @@ def get_valence_single_composition(composition,
     valence_comp, inte_factor = valence_comp.get_integer_formula_and_factor()
     valence_comp = CompositionInHouse(valence_comp)
     oxi_state = valence_comp.oxi_state_guesses_most_possible(
+        all_metal_oxi_states=all_metal_oxi_states,
         all_oxi_states=all_oxi_states,
         add_zero_valence=add_zero_valence,
+        add_compensator=add_compensator,
     )
     return oxi_state
 

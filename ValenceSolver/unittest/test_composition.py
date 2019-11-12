@@ -36,6 +36,7 @@ LaMnO3
 10.1016/S0167-2738(01)00978-X
 ['Sr0.7La0.3FeO3']
 {'Sr': 0.7, 'La': 0.3, 'Fe': 1.0, 'O': 3.0}
+{'Sr': 2, 'La': 3, 'Fe': 3.7, 'O': -2}
 
 {'Sr': 2, 'La': 3, 'Fe': 3.7, 'O': -2}
 
@@ -99,7 +100,6 @@ negative cases
 {'Cu': 3.0, 'Ba': 2.0, 'Ca': 2.0, 'Ti': 0.5, 'O': 10.0}
 {'Cu': 2.75, 'Ba': 2.0, 'Ca': 2.0, 'Ti': 0.75, 'O': 10.0}
 
-get_valence_single_composition
 questionable
 ???
 10.1016/j.jmmm.2011.06.030
@@ -190,32 +190,6 @@ class ValenceTest(unittest.TestCase):
                 'valence': {'Sr': 2, 'La': 3, 'Fe': 3.7, 'O': -2},
             },
             {
-                'doi': '10.1039/C7TC00112F',
-                'composition': {'Cr': 1.9, 'Mn': 0.1, 'Al': 1.0},
-                'valence': {'Cr': 0, 'Mn': 0, 'Al': 0},
-            },
-            {
-                'doi': '10.1039/C7TC00112F',
-                'composition': {'Cr': 1.8, 'Mn': 0.2, 'Al': 1.0},
-                'valence': {'Cr': 0, 'Mn': 0, 'Al': 0},
-            },
-            {
-                'doi': '10.1039/C7TC00112F',
-                'composition': {'Cr': 1.7, 'Mn': 0.3, 'Al': 1.0},
-                'valence': {'Cr': 0, 'Mn': 0, 'Al': 0},
-            },
-
-            {
-                'doi': '10.1016/S0921-4534(00)00269-0',
-                'composition': {'Bi': 2.4, 'Sr': 2.0, 'Gd': 1.0, 'Cu': 2.0},
-                'valence': {'Bi': 0, 'Sr': 0, 'Ca': 0, 'Cu': 0},
-            },
-            {
-                'doi': '10.1016/S0921-4534(00)00269-0',
-                'composition': {'Bi': 2.4, 'Sr': 2.0, 'Ca': 1.0, 'Cu': 2.0},
-                'valence': {'Bi': 0, 'Sr': 0, 'Ca': 0, 'Cu': 0},
-            },
-            {
                 'doi': '10.1016/j.matlet.2014.04.029',
                 'composition': {'Ca': 2.97, 'Si': 2.0, 'O': 7.0, 'Dy': 0.03},
                 'valence': {'Ca': 2, 'Si': 4, 'O': -2, 'Dy': 2},
@@ -236,19 +210,104 @@ class ValenceTest(unittest.TestCase):
                 'valence': {'Ca': 2, 'Si': 4, 'O': -2, 'Dy': 2},
             },
             {
-                'doi': '10.1016/j.jpcs.2008.12.006',
-                'composition': {'Bi': 1.7, 'Pb': 0.3, 'Sr': 2.0, 'Ca': 2.0, 'Cu': 3.0},
-                'valence': {'Bi': 0, 'Pb': 0, 'Sr': 0, 'Ca': 0, 'Cu': 0},
-            },
-            {
                 'doi': '10.1016/j.matchemphys.2010.10.027',
                 'composition': {'Ba': 0.95, 'Zr': 0.09, 'Ti': 0.91, 'O': 3.0, 'La': 0.033},
                 'valence': {'Ba': 2, 'Zr': 4, 'Ti': 4, 'O': -2, 'La': 3},
             },
             {
-                'doi': '10.1007/s10853-008-2897-2',
-                'composition': {'Ni': 1.0, 'Ti': 1.0},
-                'valence': {'Ni': 0, 'Ti': 0},
+                'doi': '10.1016/j.physc.2013.02.013',
+                'composition': {'Cu': 3.5, 'Ba': 2.0, 'Ca': 2.0, 'O': 10.0},
+                'valence': {'Cu': 12 / 3.5, 'Ba': 2.0, 'Ca': 2.0, 'O': -2.0},
+            },
+            {
+                'doi': '10.1016/j.physc.2013.02.013',
+                'composition': {'Cu': 3.25, 'Ba': 2.0, 'Ca': 2.0, 'Ti': 0.25, 'O': 10.0},
+                'valence': {'Cu': 11 / 3.25, 'Ba': 2.0, 'Ca': 2.0, 'Ti': 4.0, 'O': -2.0},
+            },
+            {
+                'doi': '10.1016/j.physc.2013.02.013',
+                'composition': {'Cu': 3.0, 'Ba': 2.0, 'Ca': 2.0, 'Ti': 0.5, 'O': 10.0},
+                'valence': {'Cu': 10 / 3.0, 'Ba': 2.0, 'Ca': 2.0, 'Ti': 4.0, 'O': -2.0},
+            },
+            {
+                'doi': '10.1016/j.physc.2013.02.013',
+                'composition': {'Cu': 2.75, 'Ba': 2.0, 'Ca': 2.0, 'Ti': 0.75, 'O': 10.0},
+                'valence': {'Cu': 9 / 2.75, 'Ba': 2.0, 'Ca': 2.0, 'Ti': 4.0, 'O': -2.0},
+            },
+            {
+                'doi': '10.1016/j.jmmm.2011.06.030',
+                'composition': {'Ba': 1.0, 'Fe': 11.8, 'O': 19.0},
+                'valence': {'Ba': 2.0, 'Fe': 36 / 11.8, 'O': -2.0},
+            },
+            {
+                'doi': '10.1016/j.jmmm.2011.06.030',
+                'composition': {'Ba': 1.0, 'Ti': 0.3, 'Fe': 11.2, 'Co': 0.3, 'O': 19.0},
+                'valence': {'Ba': 2.0, 'Ti': 4.0, 'Fe': 3.0, 'Co': 4.0, 'O': -2.0},
+            },
+            {
+                'doi': '10.1016/j.jmmm.2011.06.030',
+                'composition': {'Ba': 1.0, 'Ti': 0.6, 'Fe': 10.6, 'Co': 0.6, 'O': 19.0},
+                'valence': {'Ba': 2.0, 'Ti': 4.0, 'Fe': 3.0, 'Co': 3.0, 'O': -2.0},
+            },
+            {
+                'doi': '10.1016/j.jmmm.2011.06.030',
+                'composition': {'Ba': 1.0, 'Ti': 0.9, 'Fe': 10.0, 'Co': 0.9, 'O': 19.0},
+                'valence': {'Ba': 2.0, 'Ti': 4.0, 'Fe': 3.0, 'Co': 8 / 3.0, 'O': -2.0},
+            },
+            {
+                'doi': '10.1016/j.matlet.2014.04.029',
+                'composition': {'Ca': 2.975, 'Si': 2.0, 'O': 7.0},
+                'valence': {'Ca': 2.0, 'Si': 4.0, 'O': -2.0},
+            },
+            {
+                'doi': '10.1021/ic501510u',
+                'composition': {'Ba': 1.0, 'Ce': 0.9, 'O': 3.0, 'Ho': 0.1},
+                'valence': {'Ba': 2.0, 'Ce': 4.0, 'O': -2.0, 'Ho': 3.0},
+            },
+            {
+                'doi': '10.1016/j.ssi.2004.10.015',
+                'composition': {'La': 1.97, 'K': 0.03, 'Mo': 2.0, 'O': 9.0},
+                'valence': {'La': 3.0, 'K': 1.0, 'Mo': 6.0, 'O': -2.0},
+            },
+            {
+                'doi': '10.1016/j.ssi.2004.10.015',
+                'composition': {'La': 1.95, 'K': 0.05, 'Mo': 2.0, 'O': 9.0},
+                'valence': {'La': 3.0, 'K': 1.0, 'Mo': 6.0, 'O': -2.0},
+            },
+            {
+                'doi': '10.1016/j.ssi.2004.10.015',
+                'composition': {'La': 1.925, 'K': 0.075, 'Mo': 2.0, 'O': 9.0},
+                'valence': {'La': 3.0, 'K': 1.0, 'Mo': 6.0, 'O': -2.0},
+            },
+            {
+                'doi': '10.1016/j.ssi.2004.10.015',
+                'composition': {'La': 1.9, 'K': 0.1, 'Mo': 2.0, 'O': 9.0},
+                'valence': {'La': 3.0, 'K': 1.0, 'Mo': 6.0, 'O': -2.0},
+            },
+            {
+                'doi': '10.1016/j.ssi.2004.10.015',
+                'composition': {'La': 1.85, 'K': 0.15, 'Mo': 2.0, 'O': 9.0},
+                'valence': {'La': 3.0, 'K': 1.0, 'Mo': 6.0, 'O': -2.0},
+            },
+            {
+                'doi': '10.1149/1.2988135',
+                'composition': {'Sn': 0.9, 'In': 0.1, 'P': 2.0, 'O': 7.0},
+                'valence': {'Sn': 4.0, 'In': 3.0, 'P': 5.0, 'O': -2.0},
+            },
+            {
+                'doi': '10.1016/j.jpowsour.2017.10.091',
+                'composition': {'Ba': 3.0, 'Ca': 1.18, 'Nb': 1.77, 'Ni': 0.05, 'O': 9.0},
+                'valence': {'Ba': 2.0, 'Ca': 2.0, 'Nb': 5.0, 'Ni': 4.0, 'O': -2.0},
+            },
+            {
+                'doi': '10.1016/j.ijhydene.2011.10.020',
+                'composition': {'La': 0.99, 'Ca': 0.01, 'Nb': 0.99, 'Ti': 0.01, 'O': 4.0},
+                'valence': {'La': 3, 'Ca': 2, 'Nb': 5, 'Ti': 4, 'O': -2},
+            },
+            {
+                'doi': '10.1016/j.memsci.2018.01.068',
+                'composition': {'La': 5.5, 'W': 0.45, 'Nb': 0.15, 'Mo': 0.4, 'O': 11.25},
+                'valence': {'La': 3, 'W': 6, 'Nb': 5, 'Mo': 6, 'O': -2},
             },
         ]
 
@@ -259,110 +318,55 @@ class ValenceTest(unittest.TestCase):
                 'valence': None,
             },
             {
-                'doi': '10.1016/j.physc.2013.02.013',
-                'composition': {'Cu': 3.5, 'Ba': 2.0, 'Ca': 2.0, 'O': 10.0},
-                'valence': None,
-            },
-
-            {
-                'doi': '10.1016/j.physc.2013.02.013',
-                'composition': {'Cu': 3.25, 'Ba': 2.0, 'Ca': 2.0, 'Ti': 0.25, 'O': 10.0},
-                'valence': None,
-            },
-
-            {
-                'doi': '10.1016/j.physc.2013.02.013',
-                'composition': {'Cu': 3.0, 'Ba': 2.0, 'Ca': 2.0, 'Ti': 0.5, 'O': 10.0},
-                'valence': None,
+                'doi': '10.1039/C7TC00112F',
+                'composition': {'Cr': 1.9, 'Mn': 0.1, 'Al': 1.0},
+                'valence': {'Cr': 0, 'Mn': 0, 'Al': 0},
             },
             {
-                'doi': '10.1016/j.physc.2013.02.013',
-                'composition': {'Cu': 2.75, 'Ba': 2.0, 'Ca': 2.0, 'Ti': 0.75, 'O': 10.0},
-                'valence': None,
+                'doi': '10.1039/C7TC00112F',
+                'composition': {'Cr': 1.8, 'Mn': 0.2, 'Al': 1.0},
+                'valence': {'Cr': 0, 'Mn': 0, 'Al': 0},
+            },
+            {
+                'doi': '10.1039/C7TC00112F',
+                'composition': {'Cr': 1.7, 'Mn': 0.3, 'Al': 1.0},
+                'valence': {'Cr': 0, 'Mn': 0, 'Al': 0},
+            },
+            {
+                'doi': '10.1016/S0921-4534(00)00269-0',
+                'composition': {'Bi': 2.4, 'Sr': 2.0, 'Gd': 1.0,
+                                'Cu': 2.0},
+                'valence': {'Bi': 0, 'Sr': 0, 'Ca': 0, 'Cu': 0},
+            },
+            {
+                'doi': '10.1016/S0921-4534(00)00269-0',
+                'composition': {'Bi': 2.4, 'Sr': 2.0, 'Ca': 1.0,
+                                'Cu': 2.0},
+                'valence': {'Bi': 0, 'Sr': 0, 'Ca': 0, 'Cu': 0},
+            },
+            {
+                'doi': '10.1016/j.jpcs.2008.12.006',
+                'composition': {'Bi': 1.7, 'Pb': 0.3, 'Sr': 2.0,
+                                'Ca': 2.0, 'Cu': 3.0},
+                'valence': {'Bi': 0, 'Pb': 0, 'Sr': 0, 'Ca': 0,
+                            'Cu': 0},
+            },
+            {
+                'doi': '10.1007/s10853-008-2897-2',
+                'composition': {'Ni': 1.0, 'Ti': 1.0},
+                'valence': {'Ni': 0, 'Ti': 0},
             },
         ]
 
         self.questionable_cases = [
-            {
-                'doi': '10.1016/j.jmmm.2011.06.030',
-                'composition': {'Ba': 1.0, 'Fe': 11.8, 'O': 19.0},
-                'valence': None,
-            },
-            {
-                'doi': '10.1016/j.jmmm.2011.06.030',
-                'composition': {'Ba': 1.0, 'Ti': 0.3, 'Fe': 11.2, 'Co': 0.3, 'O': 19.0},
-                'valence': None,
-            },
-            {
-                'doi': '10.1016/j.jmmm.2011.06.030',
-                'composition': {'Ba': 1.0, 'Ti': 0.6, 'Fe': 10.6, 'Co': 0.6, 'O': 19.0},
-                'valence': None,
-            },
-            {
-                'doi': '10.1016/j.jmmm.2011.06.030',
-                'composition': {'Ba': 1.0, 'Ti': 0.9, 'Fe': 10.0, 'Co': 0.9, 'O': 19.0},
-                'valence': None,
-            },
-            {
-                'doi': '10.1016/j.matlet.2014.04.029',
-                'composition': {'Ca': 2.975, 'Si': 2.0, 'O': 7.0},
-                'valence': None,
-            },
-            {
-                'doi': '10.1021/ic501510u',
-                'composition': {'Ba': 1.0, 'Ce': 0.9, 'O': 3.0, 'Ho': 0.1},
-                'valence': None,
-            },
-            {
-                'doi': '10.1016/j.ssi.2004.10.015',
-                'composition': {'La': 1.97, 'K': 0.03, 'Mo': 2.0, 'O': 9.0},
-                'valence': None,
-            },
-            {
-                'doi': '10.1016/j.ssi.2004.10.015',
-                'composition': {'La': 1.95, 'K': 0.05, 'Mo': 2.0, 'O': 9.0},
-                'valence': None,
-            },
-            {
-                'doi': '10.1016/j.ssi.2004.10.015',
-                'composition': {'La': 1.925, 'K': 0.075, 'Mo': 2.0, 'O': 9.0},
-                'valence': None,
-            },
-            {
-                'doi': '10.1016/j.ssi.2004.10.015',
-                'composition': {'La': 1.9, 'K': 0.1, 'Mo': 2.0, 'O': 9.0},
-                'valence': None,
-            },
-            {
-                'doi': '10.1016/j.ssi.2004.10.015',
-                'composition': {'La': 1.85, 'K': 0.15, 'Mo': 2.0, 'O': 9.0},
-                'valence': None,
-            },
-            {
-                'doi': '10.1149/1.2988135',
-                'composition': {'Sn': 0.9, 'In': 0.1, 'P': 2.0, 'O': 7.0},
-                'valence': None,
-            },
-            {
-                'doi': '10.1016/j.jpowsour.2017.10.091',
-                'composition': {'Ba': 3.0, 'Ca': 1.18, 'Nb': 1.77, 'Ni': 0.05, 'O': 9.0},
-                'valence': None,
-            },
-            {
-                'doi': '10.1016/j.ijhydene.2011.10.020',
-                'composition': {'La': 0.99, 'Ca': 0.01, 'Nb': 0.99, 'Ti': 0.01, 'O': 4.0},
-                'valence': None,
-            },
-            {
-                'doi': '10.1016/j.memsci.2018.01.068',
-                'composition': {'La': 5.5, 'W': 0.45, 'Nb': 0.15, 'Mo': 0.4, 'O': 11.25},
-                'valence': None,
-            },
+
         ]
 
         self.conditions = {
-            'all_oxi_states': True,
-            'add_zero_valence': True,
+            'all_oxi_states': False,
+            'all_metal_oxi_states': True,
+            'add_zero_valence': False,
+            'add_compensator': True,
         }
 
     def convert_valence_to_float(self, data, inplace=False):
@@ -381,27 +385,36 @@ class ValenceTest(unittest.TestCase):
     def test_positive_cases(self):
         test_set = self.positive_cases
         for case in test_set:
-            cal_valence = get_valence_single_composition(case['composition'], **self.conditions)
+            cal_valence = get_valence_single_composition(case['composition'])
+            if len(cal_valence) == 0:
+                cal_valence = get_valence_single_composition(case['composition'], **self.conditions)
             print(case['composition'])
             print(case['valence'])
             print(cal_valence)
+            if len(cal_valence) > 0 and 'X' in cal_valence[0]:
+                del cal_valence[0]['X']
             if (len(cal_valence) != 1) or cal_valence[0] != case['valence']:
                 print('False')
             print()
-            # self.assertEqual(1, 1)
-            # self.assertEqual(1, len(cal_valence))
-            # self.assertEqual(case['valence'], cal_valence[0])
+            self.assertEqual(1, len(cal_valence))
+            self.assertEqual(case['valence'], cal_valence[0])
 
-    # def test_negative_cases(self):
-    #     test_set = self.negative_cases
-    #     for case in test_set:
-    #         cal_valence = get_valence_single_composition(case['composition'], **self.conditions)
-    #         self.assertEqual(0, len(cal_valence))
-    #
-    # def test_questionable_cases(self):
-    #     test_set = self.questionable_cases
-    #     for case in test_set:
-    #         cal_valence = get_valence_single_composition(case['composition'], **self.conditions)
-    #         print(case['composition'])
-    #         print(cal_valence)
-    #         print()
+    def test_negative_cases(self):
+        test_set = self.negative_cases
+        for case in test_set:
+            cal_valence = get_valence_single_composition(case['composition'])
+            if len(cal_valence) == 0:
+                cal_valence = get_valence_single_composition(case['composition'], **self.conditions)
+            print(case['composition'])
+            print(cal_valence)
+            print(len(cal_valence) == 0)
+            print()
+            self.assertEqual(0, len(cal_valence))
+
+    def test_questionable_cases(self):
+        test_set = self.questionable_cases
+        for case in test_set:
+            cal_valence = get_valence_single_composition(case['composition'], **self.conditions)
+            print(case['composition'])
+            print(cal_valence)
+            print()
