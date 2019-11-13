@@ -309,14 +309,6 @@ class ValenceTest(unittest.TestCase):
                 'composition': {'La': 5.5, 'W': 0.45, 'Nb': 0.15, 'Mo': 0.4, 'O': 11.25},
                 'valence': {'La': 3, 'W': 6, 'Nb': 5, 'Mo': 6, 'O': -2},
             },
-        ]
-
-        self.negative_cases = [
-            {
-                'doi': '10.1016/S0167-577X(02)00433-0',
-                'composition': {'Y': 2.0, 'Ba': 1.0, 'Cu': 1.0, 'O': 45.0},
-                'valence': None,
-            },
             {
                 'doi': '10.1039/C7TC00112F',
                 'composition': {'Cr': 1.9, 'Mn': 0.1, 'Al': 1.0},
@@ -334,27 +326,42 @@ class ValenceTest(unittest.TestCase):
             },
             {
                 'doi': '10.1016/S0921-4534(00)00269-0',
-                'composition': {'Bi': 2.4, 'Sr': 2.0, 'Gd': 1.0,
-                                'Cu': 2.0},
-                'valence': {'Bi': 0, 'Sr': 0, 'Ca': 0, 'Cu': 0},
+                'composition': {'Bi': 2.4, 'Sr': 2.0, 'Gd': 1.0, 'Cu': 2.0},
+                'valence': {'Bi': 0, 'Sr': 0, 'Gd': 0, 'Cu': 0},
             },
             {
                 'doi': '10.1016/S0921-4534(00)00269-0',
-                'composition': {'Bi': 2.4, 'Sr': 2.0, 'Ca': 1.0,
-                                'Cu': 2.0},
+                'composition': {'Bi': 2.4, 'Sr': 2.0, 'Ca': 1.0, 'Cu': 2.0},
                 'valence': {'Bi': 0, 'Sr': 0, 'Ca': 0, 'Cu': 0},
             },
             {
                 'doi': '10.1016/j.jpcs.2008.12.006',
-                'composition': {'Bi': 1.7, 'Pb': 0.3, 'Sr': 2.0,
-                                'Ca': 2.0, 'Cu': 3.0},
-                'valence': {'Bi': 0, 'Pb': 0, 'Sr': 0, 'Ca': 0,
-                            'Cu': 0},
+                'composition': {'Bi': 1.7, 'Pb': 0.3, 'Sr': 2.0, 'Ca': 2.0, 'Cu': 3.0},
+                'valence': {'Bi': 0, 'Pb': 0, 'Sr': 0, 'Ca': 0, 'Cu': 0},
             },
             {
                 'doi': '10.1007/s10853-008-2897-2',
                 'composition': {'Ni': 1.0, 'Ti': 1.0},
                 'valence': {'Ni': 0, 'Ti': 0},
+            },
+            {
+                'doi': '10.1021/ic402493q',
+                'composition': {'Na': 2.0, 'O': 2.0},
+                'valence': {'Na': 1, 'O': -1},
+            },
+            {
+                'doi': '10.1021/ic402493q',
+                'composition': {'Ba': 1.0, 'O': 2.0},
+                'valence': {'Ba': 2, 'O': -1},
+            },
+
+        ]
+
+        self.negative_cases = [
+            {
+                'doi': '10.1016/S0167-577X(02)00433-0',
+                'composition': {'Y': 2.0, 'Ba': 1.0, 'Cu': 1.0, 'O': 45.0},
+                'valence': None,
             },
         ]
 
@@ -365,7 +372,6 @@ class ValenceTest(unittest.TestCase):
         self.conditions = {
             'all_oxi_states': False,
             'all_metal_oxi_states': True,
-            'add_zero_valence': False,
             'add_compensator': True,
         }
 

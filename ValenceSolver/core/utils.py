@@ -7,6 +7,7 @@ from copy import deepcopy
 
 from Synthepedia.concepts.materials.complex import GeneralComposition
 from .composition_inhouse import CompositionInHouse
+from pymatgen.core.periodic_table import Element
 
 __author__ = 'Tanjin He'
 __maintainer__ = 'Tanjin He'
@@ -16,12 +17,14 @@ __email__ = 'tanjin_he@berkeley.edu'
 def dictOrdered(unordered_dict):
     return collections.OrderedDict(sorted(unordered_dict.items(), key=lambda x:x[0]))
 
+def is_alloy(composition):
+    return all([Element(el).is_metal for el in composition])
 
 def get_valence_single_composition(composition,
                                    all_metal_oxi_states=False,
                                    all_oxi_states=False,
-                                   add_zero_valence=False,
-                                   add_compensator=False):
+                                   add_compensator=False,
+                                   double_el_amt=False):
     """
 
     :param composition: can be a plain dict or a plain string that pymatgen can interpret
@@ -33,9 +36,32 @@ def get_valence_single_composition(composition,
     oxi_state = valence_comp.oxi_state_guesses_most_possible(
         all_metal_oxi_states=all_metal_oxi_states,
         all_oxi_states=all_oxi_states,
-        add_zero_valence=add_zero_valence,
         add_compensator=add_compensator,
     )
+    if len(oxi_state) == 0:
+        print('composition: ', composition)
+        print('before relaxation: ', oxi_state)
+        oxi_state = valence_comp.oxi_state_guesses_most_possible(
+            all_metal_oxi_states=True,
+            all_oxi_states=all_oxi_states,
+            add_compensator=True,
+        )
+        print('after relaxation: ', oxi_state)
+    if len(oxi_state) == 0 and is_alloy(composition):
+        oxi_state = [
+            {el: 0.0 for el in composition}
+        ]
+        print('possible alloy: ', oxi_state)
+    if len(oxi_state) > 0 and 'X' in oxi_state[0] and oxi_state[0]['X'] > 0.3:
+        # possibly wrong composition
+        oxi_state = valence_comp.oxi_state_guesses_most_possible(
+            all_metal_oxi_states=True,
+            all_oxi_states=all_oxi_states,
+            add_compensator=True,
+            double_el_amt=True
+        )
+        print('after double el amt: ', oxi_state)
+        # add exception for O2
     return oxi_state
 
 
@@ -272,10 +298,7 @@ def get_material_valence(material, valence_cache={}, add_zero_valence=False):
             oxi_state = valence_cache[mat_RCFormula]
         else:
             try:
-                valence_comp = CompositionInHouse(tmp_comp.composition)
-                valence_comp, inte_factor = valence_comp.get_integer_formula_and_factor()
-                valence_comp = CompositionInHouse(valence_comp)
-                oxi_state = valence_comp.oxi_state_guesses_most_possible(all_oxi_states=False, add_zero_valence=add_zero_valence)
+                oxi_state = get_valence_single_composition(tmp_comp.composition)
             except:
                 oxi_state = None
             if oxi_state and oxi_state[0]:
