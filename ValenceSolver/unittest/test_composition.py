@@ -354,7 +354,6 @@ class ValenceTest(unittest.TestCase):
                 'composition': {'Ba': 1.0, 'O': 2.0},
                 'valence': {'Ba': 2, 'O': -1},
             },
-
         ]
 
         self.negative_cases = [
@@ -392,10 +391,10 @@ class ValenceTest(unittest.TestCase):
     def test_positive_cases(self):
         test_set = self.positive_cases
         for case in test_set:
-            cal_valence, _, _ = CompositionInHouse.get_most_possible_oxi_state_of_composition(case['composition'])
-            # cal_valence = get_valence_single_composition(case['composition'])
-            # if len(cal_valence) == 0:
-            #     cal_valence = get_valence_single_composition(case['composition'], **self.conditions)
+            # cal_valence, _, _ = CompositionInHouse.get_most_possible_oxi_state_of_composition(case['composition'])
+            cal_valence = get_valence_single_composition(case['composition'])
+            if len(cal_valence) == 0:
+                cal_valence = get_valence_single_composition(case['composition'], **self.conditions)
             print('composition: ', case['composition'])
             print('real valence: ', case['valence'])
             print('calculated valence: ', cal_valence)

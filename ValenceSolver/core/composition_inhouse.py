@@ -2,21 +2,16 @@
 from __future__ import division, unicode_literals
 
 from itertools import product
-
 import os
-
 from collections import defaultdict
-
 from monty.serialization import loadfn
 from six.moves import zip
-
 from functools import total_ordering
 
 from pymatgen.core.periodic_table import Element, Specie
-
-
 from pymatgen import Composition
-import  pulp
+
+import pulp
 
 """
 The module is modified based on the original Composition class in pymatgen 

@@ -36,7 +36,7 @@ def get_valence_single_composition(composition,
 
 
 
-    oxi_state_2 = valence_comp.oxi_state_guesses_most_possible(
+    oxi_state_2 = valence_comp._oxi_state_guesses_most_possible(
         all_metal_oxi_states=all_metal_oxi_states,
         all_oxi_states=all_oxi_states,
         add_compensator=add_compensator,
@@ -48,7 +48,7 @@ def get_valence_single_composition(composition,
     if len(oxi_state) == 0:
         # print('composition: ', composition)
         # print('before relaxation: ', oxi_state)
-        oxi_state_2 = valence_comp.oxi_state_guesses_most_possible(
+        oxi_state_2 = valence_comp._oxi_state_guesses_most_possible(
             all_metal_oxi_states=True,
             all_oxi_states=all_oxi_states,
             add_compensator=True,
@@ -84,7 +84,7 @@ def get_valence_single_composition(composition,
             del oxi_state[0]['X']
         else:
             # possibly wrong composition
-            oxi_state = valence_comp.oxi_state_guesses_most_possible(
+            oxi_state = valence_comp._oxi_state_guesses_most_possible(
                 all_metal_oxi_states=True,
                 all_oxi_states=all_oxi_states,
                 add_compensator=True,
