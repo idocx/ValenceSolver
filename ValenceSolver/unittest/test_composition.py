@@ -394,9 +394,9 @@ class ValenceTest(unittest.TestCase):
             cal_valence = get_valence_single_composition(case['composition'])
             if len(cal_valence) == 0:
                 cal_valence = get_valence_single_composition(case['composition'], **self.conditions)
-            print(case['composition'])
-            print(case['valence'])
-            print(cal_valence)
+            print('composition: ', case['composition'])
+            print('real valence: ', case['valence'])
+            print('calculated valence: ', cal_valence)
             if len(cal_valence) > 0 and 'X' in cal_valence[0]:
                 del cal_valence[0]['X']
             if (len(cal_valence) != 1) or cal_valence[0] != case['valence']:

@@ -33,35 +33,54 @@ def get_valence_single_composition(composition,
     valence_comp = CompositionInHouse(composition)
     valence_comp, inte_factor = valence_comp.get_integer_formula_and_factor()
     valence_comp = CompositionInHouse(valence_comp)
+
+    oxi_state = valence_comp.oxi_state_guesses(
+        all_metal_oxi_states=all_metal_oxi_states,
+        all_oxi_states=all_oxi_states,
+        add_compensator=add_compensator,
+        double_el_amt=double_el_amt,
+    )
+    print(oxi_state)
+
     oxi_state = valence_comp.oxi_state_guesses_most_possible(
         all_metal_oxi_states=all_metal_oxi_states,
         all_oxi_states=all_oxi_states,
         add_compensator=add_compensator,
+        double_el_amt=double_el_amt,
     )
     if len(oxi_state) == 0:
-        print('composition: ', composition)
-        print('before relaxation: ', oxi_state)
+        # print('composition: ', composition)
+        # print('before relaxation: ', oxi_state)
         oxi_state = valence_comp.oxi_state_guesses_most_possible(
             all_metal_oxi_states=True,
             all_oxi_states=all_oxi_states,
             add_compensator=True,
         )
-        print('after relaxation: ', oxi_state)
+        # print('after relaxation: ', oxi_state)
     if len(oxi_state) == 0 and is_alloy(composition):
         oxi_state = [
             {el: 0.0 for el in composition}
         ]
-        print('possible alloy: ', oxi_state)
+        # print('possible alloy: ', oxi_state)
     if len(oxi_state) > 0 and 'X' in oxi_state[0] and oxi_state[0]['X'] > 0.3:
-        # possibly wrong composition
-        oxi_state = valence_comp.oxi_state_guesses_most_possible(
-            all_metal_oxi_states=True,
-            all_oxi_states=all_oxi_states,
-            add_compensator=True,
-            double_el_amt=True
-        )
-        print('after double el amt: ', oxi_state)
+        if (oxi_state[0]['X'] == 1.0
+            and composition['O'] == 2
+            and len(composition) == 2
+        ):
+            # possibly peroxide
+            oxi_state[0]['O'] = -1.0
+            del oxi_state[0]['X']
+        else:
+            # possibly wrong composition
+            oxi_state = valence_comp.oxi_state_guesses_most_possible(
+                all_metal_oxi_states=True,
+                all_oxi_states=all_oxi_states,
+                add_compensator=True,
+                double_el_amt=True
+            )
+        # print('after double el amt: ', oxi_state)
         # add exception for O2
+
     return oxi_state
 
 
