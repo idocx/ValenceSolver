@@ -20,12 +20,10 @@ With a composition dict or a plain formula, the minimal code is as following. (e
     from ValenceSolver.core.composition_inhouse import CompositionInHouse
 
     # The composition here is a plain dict like {'ele': number} without variables. 
-    valence_comp = CompositionInHouse(composition)
-    valence_comp, inte_factor = valence_comp.get_integer_formula_and_factor()
-    valence_comp = CompositionInHouse(valence_comp)
-    oxi_state = valence_comp.oxi_state_guesses_most_possible(all_oxi_states=False)
+    oxi_state, is_usual, comments = \
+        CompositionInHouse.get_most_possible_oxi_state_of_composition(composition)
 
-The minimal code is as following. We first create a `GeneralComposition` object using `Synthepedia`. `GeneralComposition` is able to generate all composition instances by substituting varibles in formula and to check if the stoichiometric number is valid (should not be negative) after substitution. Then, we solve the valence by calling `get_material_valence(tmp_mat_obj, valence_cache=valence_cache)`. The valence_cache is optional, which is designed to save solved cases to avoid duplication in the future. It can be initialized as an emtpy dict and the value would be updated automatically after calling `get_material_valence`. (example in example/example_for_reactions.py)
+With a dataset file, where there might be variables of elements and amount, the minimal code is as following. We first create a `GeneralComposition` object using `Synthepedia`. `GeneralComposition` is able to generate all composition instances by substituting varibles in formula and to check if the stoichiometric number is valid (should not be negative) after substitution. Then, we solve the valence by calling `get_material_valence(tmp_mat_obj, valence_cache=valence_cache)`. The valence_cache is optional, which is designed to save solved cases to avoid duplication in the future. It can be initialized as an emtpy dict and the value would be updated automatically after calling `get_material_valence`. (example in example/example_for_reactions.py)
 
     from ValenceSolver.core.utils import to_GeneralMat_obj, get_material_valence
     

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import os
+import random
 from copy import deepcopy
 import collections
 from pprint import pprint
@@ -14,11 +15,12 @@ __email__ = 'tanjin_he@berkeley.edu'
 
 if __name__ == "__main__":
     with open('rsc/upload_v10.json', 'r') as fr:
+    # with open('rsc/data_release_v12.json', 'r') as fr:
         reactions = json.load(fr)
     reactions = reactions['reactions']
 
     print('len(reactions)', len(reactions))
-
+    random.shuffle(reactions)
     valence_cache = {}
     for i, reaction in enumerate(reactions):
     # #     target
@@ -41,6 +43,20 @@ if __name__ == "__main__":
             )
             valence = get_material_valence(tmp_mat_obj, valence_cache=valence_cache)
             tmp_comp['valence'] = valence
+
+
+            if tmp_mat_obj is not None:
+                print(valence)
+
+            if valence is None and tmp_mat_obj is not None:
+                print(valence)
+                error_comps = tmp_mat_obj.get_critical_compositions(
+                        skip_wrong_composition=True
+                )
+                print(reaction['doi'])
+                pprint(reaction['targets_string'])
+                for c in error_comps:
+                    print(c.composition)
 
     #     precursor
         for tmp_pre in reaction['precursors']:
