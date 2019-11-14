@@ -373,6 +373,7 @@ class ValenceTest(unittest.TestCase):
             'all_oxi_states': False,
             'all_metal_oxi_states': True,
             'add_compensator': True,
+            'double_el_amt': False
         }
 
     def convert_valence_to_float(self, data, inplace=False):
@@ -391,9 +392,10 @@ class ValenceTest(unittest.TestCase):
     def test_positive_cases(self):
         test_set = self.positive_cases
         for case in test_set:
-            cal_valence = get_valence_single_composition(case['composition'])
-            if len(cal_valence) == 0:
-                cal_valence = get_valence_single_composition(case['composition'], **self.conditions)
+            cal_valence, _, _ = CompositionInHouse.get_most_possible_oxi_state_of_composition(case['composition'])
+            # cal_valence = get_valence_single_composition(case['composition'])
+            # if len(cal_valence) == 0:
+            #     cal_valence = get_valence_single_composition(case['composition'], **self.conditions)
             print('composition: ', case['composition'])
             print('real valence: ', case['valence'])
             print('calculated valence: ', cal_valence)
@@ -408,9 +410,10 @@ class ValenceTest(unittest.TestCase):
     def test_negative_cases(self):
         test_set = self.negative_cases
         for case in test_set:
-            cal_valence = get_valence_single_composition(case['composition'])
-            if len(cal_valence) == 0:
-                cal_valence = get_valence_single_composition(case['composition'], **self.conditions)
+            cal_valence, _, _ = CompositionInHouse.get_most_possible_oxi_state_of_composition(case['composition'])
+            # cal_valence = get_valence_single_composition(case['composition'])
+            # if len(cal_valence) == 0:
+            #     cal_valence = get_valence_single_composition(case['composition'], **self.conditions)
             print(case['composition'])
             print(cal_valence)
             print(len(cal_valence) == 0)
@@ -420,7 +423,10 @@ class ValenceTest(unittest.TestCase):
     def test_questionable_cases(self):
         test_set = self.questionable_cases
         for case in test_set:
-            cal_valence = get_valence_single_composition(case['composition'], **self.conditions)
+            cal_valence, _, _ = CompositionInHouse.get_most_possible_oxi_state_of_composition(case['composition'])
+            # cal_valence = get_valence_single_composition(case['composition'])
+            # if len(cal_valence) == 0:
+            #     cal_valence = get_valence_single_composition(case['composition'], **self.conditions)
             print(case['composition'])
             print(cal_valence)
             print()

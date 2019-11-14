@@ -75,7 +75,11 @@ class CompositionInHouse(Composition):
     >>> comp.num_atoms
     7.0
     """
+    # assign X=0 with a large probability, so that X is always 0 for usual cases
     LARGE_PROBABILITY = 10000
+    # might be wrong composition when valence of X is too large
+    # 0.3 is an arbitrary threshold for warning
+    X_valence_warning_level = 0.3
 
     def __init__(self, *args, **kwargs):  # allow_negative=False
         """
@@ -223,22 +227,29 @@ class CompositionInHouse(Composition):
         but X2Y2 is. Results are returned from most to least probable based
         on ICSD statistics. Use max_sites to improve performance if needed.
 
-        Args:
-            oxi_states_override (dict): dict of str->list to override an
+        :param oxi_states_override: dict. dict of str->list to override an
                 element's common oxidation states, e.g. {"V": [2,3,4,5]}
-            target_charge (int): the desired total charge on the structure.
-                Default is 0 signifying charge balance.
-            all_oxi_states (bool): if True, an element defaults to
-                all oxidation states in pymatgen Element.icsd_oxidation_states.
-                Otherwise, default is Element.common_oxidation_states. Note
+        :param all_metal_oxi_states: bool. if True, besides the pymatgen
+                Element.icsd_oxidation_states, the positive valence states in
+                Element.oxidation_states will be appended for metals. Note
+                that the full oxidation state list is *very* inclusive and
+                can produce nonsensical results. Therefore, this option is a
+                trade off.
+        :param all_oxi_states: bool. if True, an element defaults to
+                all oxidation states in pymatgen Element.oxidation_states.
+                Otherwise, default is Element.icsd_oxidation_states. Note
                 that the full oxidation state list is *very* inclusive and
                 can produce nonsensical results.
-            max_sites (int): if possible, will reduce Compositions to at most
+        :param max_sites: int. if possible, will reduce Compositions to at most
                 this many many sites to speed up oxidation state guesses. Set
                 to -1 to just reduce fully.
-
-        Returns:
-            A list of dicts - each dict reports an element symbol and average
+        :param add_compensator: bool. if True, add a fake element "X" to compensate
+                charge. "X" represents oxygen deficiency/excess, oxidized/reduced metal,
+                or other factors leading to an unsual valence environment.
+        :param double_el_amt: bool. if True, double the amount of each element, because
+                sometimes there is a valence skipping effect but the amount is odd.
+                https://web.stanford.edu/group/fisher/research/valence_skipping_elements.html
+        :return: a list of dicts - each dict reports an element symbol and average
                 oxidation state across all sites in that composition. If the
                 composition is not charge balanced, an empty list is returned.
         """
@@ -260,7 +271,7 @@ class CompositionInHouse(Composition):
         for idx, el in enumerate(els):
             el_sum_scores[idx] = {}
             el_sums.append([])
-            all_sums, all_scores = CompositionInHouse.get_possible_sums(
+            all_sums, sum_scores = CompositionInHouse.get_possible_sums(
                 el,
                 all_oxids[el],
                 int(el_amt[el]),
@@ -268,7 +279,7 @@ class CompositionInHouse(Composition):
             )
             for tmp_index, tmp_sum in enumerate(all_sums):
                 el_sums[idx].append(tmp_sum)
-                score = all_scores[tmp_index]
+                score = sum_scores[tmp_index]
                 el_sum_scores[idx][tmp_sum] = max(el_sum_scores[idx].get(tmp_sum, 0), score)
 
         for x in product(*el_sums):
@@ -289,14 +300,94 @@ class CompositionInHouse(Composition):
         all_sols = [x for (y, x) in sorted(zip(all_scores, all_sols),
                                            key=lambda pair: pair[0],
                                            reverse=True)]
-        
+
         # elementary materials are not solved but the valence should be 0
         if not all_sols and len(els) == 1:
             all_sols = [{el: 0.0 for el in els}]
 
         return all_sols
 
-    def oxi_state_guesses_most_possible(self,
+    def oxi_state_guesses_most_possible(self):
+        """
+        guess the most possible oxidation states based on the same method in pymatggen.
+        linear programming is used to accelerate the computation.
+        relaxation assuptions are adopted when there is no solution using default solver in pymatgen.
+
+        :param composition: can be a plain dict or a plain string that pymatgen can interpret
+        :return: (oxi_state, is_usual, comments)
+            oxi_state: dict of oxidation state {el: valence}
+            is_usual: bool. if True. The solution is the same as the default solution from
+                pymatgen. Otherwise, there is no solution found using the default solver in
+                pymatgen. Then relaxation is used by assuming the composition is unusual.
+                The unusual situations include alloy, oxygen deficient/excess, more
+                oxidized/reduced metal states, etc.
+            comments: list of strings. Details when is_usual == False.
+        """
+        is_usual = True
+        comments = []
+        el_amt = self.get_el_amt_dict()
+
+        # solution same as pymatgen, but much faster,
+        # so that we can do relaxation if no solution found
+        oxi_state = self._oxi_state_guesses_most_possible(
+            all_metal_oxi_states=False,
+            all_oxi_states=False,
+            add_compensator=False,
+            double_el_amt=False,
+        )
+
+        # deal with alloy
+        if len(oxi_state) == 0 and self.is_alloy():
+            oxi_state = [
+                {el: 0.0 for el in el_amt}
+            ]
+            is_usual = False
+            comments = ['is alloy']
+
+        # solve again with relaxation
+        if len(oxi_state) == 0:
+            oxi_state = self._oxi_state_guesses_most_possible(
+                all_metal_oxi_states=True,
+                all_oxi_states=False,
+                add_compensator=True,
+                double_el_amt=False,
+            )
+            is_usual = False
+            comments.append('all possible positive valence states are used for metals')
+
+        # might be wrong composition when valence of X is too large
+        # solve again for large X
+        if (len(oxi_state) > 0
+            and 'X' in oxi_state[0]
+            and abs(oxi_state[0]['X']) > CompositionInHouse.X_valence_warning_level):
+            if (oxi_state[0]['X'] == 1.0
+                and el_amt['O'] == 2
+                and len(el_amt) == 2
+            ):
+                # possibly peroxide, correct
+                is_usual = True
+                oxi_state[0]['O'] = -1.0
+                del oxi_state[0]['X']
+            else:
+                # solve again by doubling the amount in case there is a valence skipping effect
+                oxi_state = self._oxi_state_guesses_most_possible(
+                    all_metal_oxi_states=True,
+                    all_oxi_states=False,
+                    add_compensator=True,
+                    double_el_amt=True
+                )
+
+        if (len(oxi_state) > 0 and 'X' in oxi_state[0]):
+            if oxi_state[0]['X'] > 0:
+                comments.append('possibly oxygen deficient, or some elements are more oxidized than usual')
+            elif oxi_state[0]['X'] < 0:
+                comments.append('possibly oxygen excess, or some elements are more reduced than usual')
+            if abs(oxi_state[0]['X']) > CompositionInHouse.X_valence_warning_level:
+                comments.append('Warning: the input composition might be wrong')
+            del oxi_state[0]['X']
+        return oxi_state, is_usual, comments
+
+    def _oxi_state_guesses_most_possible(self,
                                         oxi_states_override=None,
                                         target_charge=0,
                                         all_metal_oxi_states=False,
@@ -313,24 +404,32 @@ class CompositionInHouse(Composition):
         but X2Y2 is. Results are returned from most to least probable based
         on ICSD statistics. Use max_sites to improve performance if needed.
 
-        Args:
-            oxi_states_override (dict): dict of str->list to override an
+        :param oxi_states_override: dict. dict of str->list to override an
                 element's common oxidation states, e.g. {"V": [2,3,4,5]}
-            target_charge (int): the desired total charge on the structure.
-                Default is 0 signifying charge balance.
-            all_oxi_states (bool): if True, an element defaults to
-                all oxidation states in pymatgen Element.icsd_oxidation_states.
-                Otherwise, default is Element.common_oxidation_states. Note
+        :param all_metal_oxi_states: bool. if True, besides the pymatgen
+                Element.icsd_oxidation_states, the positive valence states in
+                Element.oxidation_states will be appended for metals. Note
+                that the full oxidation state list is *very* inclusive and
+                can produce nonsensical results. Therefore, this option is a
+                trade off.
+        :param all_oxi_states: bool. if True, an element defaults to
+                all oxidation states in pymatgen Element.oxidation_states.
+                Otherwise, default is Element.icsd_oxidation_states. Note
                 that the full oxidation state list is *very* inclusive and
                 can produce nonsensical results.
-            max_sites (int): if possible, will reduce Compositions to at most
+        :param max_sites: int. if possible, will reduce Compositions to at most
                 this many many sites to speed up oxidation state guesses. Set
                 to -1 to just reduce fully.
-
-        Returns:
-            A list of dicts - each dict reports an element symbol and average
-                oxidation state across all sites in that composition. If the
-                composition is not charge balanced, an empty list is returned.
+        :param add_compensator: bool. if True, add a fake element "X" to compensate
+                charge. "X" represents oxygen deficiency/excess, oxidized/reduced metal,
+                or other factors leading to an unsual valence environment.
+        :param double_el_amt: bool. if True, double the amount of each element, because
+                sometimes there is a valence skipping effect but the amount is odd.
+                https://web.stanford.edu/group/fisher/research/valence_skipping_elements.html
+        :return: a list of dicts - the length is always 1 or 0 because only the most
+                possible solution is returned. each dict reports an element symbol
+                and average oxidation state across all sites in that composition.
+                If the composition is not charge balanced, an empty list is returned.
         """
 
         all_sols = []  # will contain all solutions
@@ -364,7 +463,7 @@ class CompositionInHouse(Composition):
     def get_possible_sums(el, oxi_states, el_amt, add_compensator=False):
         # goal
         all_sums = []
-        all_scores = []
+        sum_scores = []
 
         oxi_names = [str(tmp_state) for tmp_state in oxi_states]
         if el in Element.__members__:
@@ -375,7 +474,7 @@ class CompositionInHouse(Composition):
             }
         else:
             costs = {}
-        if add_compensator:
+        if add_compensator and el == 'X':
             costs = {
                 '0': CompositionInHouse.LARGE_PROBABILITY,
                 '1': 1,
@@ -403,10 +502,10 @@ class CompositionInHouse(Composition):
             problem.solve()
             if pulp.LpStatus[problem.status] == 'Optimal':
                 all_sums.append(tmp_sum)
-                all_scores.append(pulp.value(problem.objective))
+                sum_scores.append(pulp.value(problem.objective))
                 pass
 
-        return all_sums, all_scores
+        return all_sums, sum_scores
 
     @staticmethod
     def get_most_possible_solution(all_els,
@@ -461,3 +560,31 @@ class CompositionInHouse(Composition):
             score = pulp.value(problem.objective)
 
         return solution, score
+
+    def is_alloy(self):
+        return all([Element(el).is_metal for el in self.get_el_amt_dict()])
+
+    @staticmethod
+    def get_most_possible_oxi_state_of_composition(composition):
+        """
+        a wrapper using the method oxi_state_guesses_most_possible to guess the most possible
+        oxidation states based on the same method in pymatggen. The input can be a plain dict
+        or a plain string that pymatgen can interpret
+
+        :param composition: can be a plain dict or a plain string that pymatgen can interpret
+        :return: (oxi_state, is_usual, comments)
+            oxi_state: dict of oxidation state {el: valence}
+            is_usual: bool. if True. The solution is the same as the default solution from
+                pymatgen. Otherwise, there is no solution found using the default solver in
+                pymatgen. Then relaxation is used by assuming the composition is unusual.
+                The unusual situations include alloy, oxygen deficient/excess, more
+                oxidized/reduced metal states, etc.
+            comments: list of strings. Details when is_usual == False.
+        """
+        valence_comp = CompositionInHouse(composition)
+        valence_comp, inte_factor = valence_comp.get_integer_formula_and_factor()
+        valence_comp = CompositionInHouse(valence_comp)
+        oxi_state, is_usual, comments = valence_comp.oxi_state_guesses_most_possible()
+        return oxi_state, is_usual, comments
+
+

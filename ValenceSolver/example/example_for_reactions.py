@@ -14,8 +14,8 @@ __email__ = 'tanjin_he@berkeley.edu'
 
 
 if __name__ == "__main__":
-    # with open('rsc/upload_v10.json', 'r') as fr:
-    with open('rsc/data_release_v12.json', 'r') as fr:
+    with open('rsc/upload_v10.json', 'r') as fr:
+    # with open('rsc/data_release_v12.json', 'r') as fr:
         reactions = json.load(fr)
     reactions = reactions['reactions']
 
@@ -43,6 +43,11 @@ if __name__ == "__main__":
             )
             valence = get_material_valence(tmp_mat_obj, valence_cache=valence_cache)
             tmp_comp['valence'] = valence
+
+
+            if tmp_mat_obj is not None:
+                print(valence)
+
             if valence is None and tmp_mat_obj is not None:
                 print(valence)
                 error_comps = tmp_mat_obj.get_critical_compositions(

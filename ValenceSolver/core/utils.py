@@ -34,28 +34,40 @@ def get_valence_single_composition(composition,
     valence_comp, inte_factor = valence_comp.get_integer_formula_and_factor()
     valence_comp = CompositionInHouse(valence_comp)
 
-    oxi_state = valence_comp.oxi_state_guesses(
-        all_metal_oxi_states=all_metal_oxi_states,
-        all_oxi_states=all_oxi_states,
-        add_compensator=add_compensator,
-        double_el_amt=double_el_amt,
-    )
-    print(oxi_state)
 
-    oxi_state = valence_comp.oxi_state_guesses_most_possible(
+
+    oxi_state_2 = valence_comp.oxi_state_guesses_most_possible(
         all_metal_oxi_states=all_metal_oxi_states,
         all_oxi_states=all_oxi_states,
         add_compensator=add_compensator,
         double_el_amt=double_el_amt,
     )
+
+    oxi_state = oxi_state_2
+
     if len(oxi_state) == 0:
         # print('composition: ', composition)
         # print('before relaxation: ', oxi_state)
-        oxi_state = valence_comp.oxi_state_guesses_most_possible(
+        oxi_state_2 = valence_comp.oxi_state_guesses_most_possible(
             all_metal_oxi_states=True,
             all_oxi_states=all_oxi_states,
             add_compensator=True,
         )
+
+        oxi_state_1 = valence_comp.oxi_state_guesses(
+            all_metal_oxi_states=True,
+            all_oxi_states=all_oxi_states,
+            add_compensator=True,
+            double_el_amt=double_el_amt,
+        )
+
+        if len(oxi_state_1) > 0:
+            print('compare guess and guess_most_possible')
+            print(oxi_state_1)
+            print(oxi_state_1[0] == oxi_state_2[0])
+
+        oxi_state = oxi_state_2
+
         # print('after relaxation: ', oxi_state)
     if len(oxi_state) == 0 and is_alloy(composition):
         oxi_state = [
@@ -293,7 +305,7 @@ def merge_valence(valence_combos):
         return merge_same_valence(valence_combos)
         
         
-def get_material_valence(material, valence_cache={}, add_zero_valence=False):
+def get_material_valence(material, valence_cache={}):
     target_valence = None
     if material:
         # some value of variables is incredibly large and make the number of element to be negative
@@ -317,7 +329,7 @@ def get_material_valence(material, valence_cache={}, add_zero_valence=False):
             oxi_state = valence_cache[mat_RCFormula]
         else:
             try:
-                oxi_state = get_valence_single_composition(tmp_comp.composition)
+                oxi_state, _, _ = CompositionInHouse.get_most_possible_oxi_state_of_composition(tmp_comp.composition)
             except:
                 oxi_state = None
             if oxi_state and oxi_state[0]:
