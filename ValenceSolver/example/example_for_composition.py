@@ -36,25 +36,6 @@ def get_valence_datafile_format():
     valence = get_material_valence(tmp_mat_obj)
     pprint(valence)
 
-def get_valence_plain_dict(composition):
-    valence_comp = CompositionInHouse(composition)
-    valence_comp, inte_factor = valence_comp.get_integer_formula_and_factor()
-    valence_comp = CompositionInHouse(valence_comp)
-    oxi_state = valence_comp.oxi_state_guesses_most_possible(all_oxi_states=False)
-    print(composition, oxi_state)
-    return oxi_state
-
-def get_valence_plain_formula(formula, add_zero_valence=False):
-    valence_comp = CompositionInHouse(formula)
-    valence_comp, inte_factor = valence_comp.get_integer_formula_and_factor()
-    valence_comp = CompositionInHouse(valence_comp)
-    oxi_state = valence_comp.oxi_state_guesses_most_possible(
-        all_oxi_states=False,
-        add_zero_valence=add_zero_valence
-    )
-    print(formula, oxi_state)
-    return oxi_state
-
 
 if __name__ == '__main__':
     composition = {
