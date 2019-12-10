@@ -303,7 +303,8 @@ class CompositionInHouse(Composition):
         return all_sols
 
     def oxi_state_guesses_most_possible(self,
-                                        oxi_states_override=None):
+                                        oxi_states_override=None,
+                                        return_details=False):
         """
         guess the most possible oxidation states based on the same method in pymatggen.
         linear programming is used to accelerate the computation.
@@ -312,6 +313,7 @@ class CompositionInHouse(Composition):
         :param composition: can be a plain dict or a plain string that pymatgen can interpret
         :param oxi_states_override: dict. dict of str->list to override an
                 element's common oxidation states, e.g. {"V": [2,3,4,5]}
+        :param return_details: bool. return number of each type of ions or not
         :return: (oxi_state, is_usual, comments)
             oxi_state: dict of oxidation state {el: valence}
             is_usual: bool. if True. The solution is the same as the default solution from
@@ -327,12 +329,13 @@ class CompositionInHouse(Composition):
 
         # solution same as pymatgen, but much faster,
         # so that we can do relaxation if no solution found
-        oxi_state = self._oxi_state_guesses_most_possible(
+        oxi_state, oxi_details = self._oxi_state_guesses_most_possible(
             oxi_states_override=oxi_states_override,
             all_metal_oxi_states=False,
             all_oxi_states=False,
             add_compensator=False,
             double_el_amt=False,
+            return_details=True,
         )
 
         # deal with alloy
@@ -345,12 +348,13 @@ class CompositionInHouse(Composition):
 
         # solve again with relaxation
         if len(oxi_state) == 0:
-            oxi_state = self._oxi_state_guesses_most_possible(
+            oxi_state, oxi_details = self._oxi_state_guesses_most_possible(
                 oxi_states_override=oxi_states_override,
                 all_metal_oxi_states=True,
                 all_oxi_states=False,
                 add_compensator=True,
                 double_el_amt=False,
+                return_details=True,
             )
             is_usual = False
             comments.append('all possible positive valence states are used for metals')
@@ -370,12 +374,13 @@ class CompositionInHouse(Composition):
                 del oxi_state[0]['X']
             else:
                 # solve again by doubling the amount in case there is a valence skipping effect
-                oxi_state = self._oxi_state_guesses_most_possible(
+                oxi_state, oxi_details = self._oxi_state_guesses_most_possible(
                     oxi_states_override=oxi_states_override,
                     all_metal_oxi_states=True,
                     all_oxi_states=False,
                     add_compensator=True,
-                    double_el_amt=True
+                    double_el_amt=True,
+                    return_details=True,
                 )
 
         if (len(oxi_state) > 0 and 'X' in oxi_state[0]):
@@ -386,7 +391,10 @@ class CompositionInHouse(Composition):
             if abs(oxi_state[0]['X']) > CompositionInHouse.X_valence_warning_level:
                 comments.append('Warning: the input composition might be wrong')
             del oxi_state[0]['X']
-        return oxi_state, is_usual, comments
+        if return_details:
+            return oxi_state, is_usual, comments, oxi_details
+        else:
+            return oxi_state, is_usual, comments
 
     def _oxi_state_guesses_most_possible(self,
                                         oxi_states_override=None,
@@ -395,7 +403,8 @@ class CompositionInHouse(Composition):
                                         all_oxi_states=False,
                                         max_sites=None,
                                         add_compensator=False,
-                                        double_el_amt=False):
+                                        double_el_amt=False,
+                                        return_details=False):
         """
         Checks if the composition is charge-balanced and returns back all
         charge-balanced oxidation state combinations. Composition must have
@@ -427,6 +436,7 @@ class CompositionInHouse(Composition):
         :param double_el_amt: bool. if True, double the amount of each element, because
                 sometimes there is a valence skipping effect but the amount is odd.
                 https://web.stanford.edu/group/fisher/research/valence_skipping_elements.html
+        :param return_details: bool. return number of each type of ions or not
         :return: a list of dicts - the length is always 1 or 0 because only the most
                 possible solution is returned. each dict reports an element symbol
                 and average oxidation state across all sites in that composition.
@@ -435,6 +445,7 @@ class CompositionInHouse(Composition):
 
         all_sols = []  # will contain all solutions
         all_scores = []  # will contain a score for each solution
+        all_details = [] # contain number of each type of ion
         els, el_amt, all_oxids = self.get_oxid_state_guess_essentials(
             oxi_states_override=oxi_states_override,
             all_metal_oxi_states=all_metal_oxi_states,
@@ -443,7 +454,7 @@ class CompositionInHouse(Composition):
             add_compensator=add_compensator,
             double_el_amt=double_el_amt
         )
-        solution, score = CompositionInHouse.get_most_possible_solution(
+        solution, score, valence_detail = CompositionInHouse.get_most_possible_solution(
             els,
             all_oxids,
             el_amt,
@@ -453,12 +464,16 @@ class CompositionInHouse(Composition):
         if solution:
             all_sols = [solution]
             all_scores = [score]
-        
+            all_details = [valence_detail]
+
         # elementary materials are not solved but the valence should be 0
         if not all_sols and len(els) == 1:
             all_sols = [{el:0.0 for el in els}]
-            
-        return all_sols
+            all_details = [{el: el_amt[el] for el in els}]
+        if return_details:
+            return all_sols, all_details
+        else:
+            return all_sols
 
     @staticmethod
     def get_possible_sums(el, oxi_states, el_amt, add_compensator=False):
@@ -517,6 +532,7 @@ class CompositionInHouse(Composition):
         # goal
         solution = {}
         score = 0
+        valence_detail = {}
 
         oxi_names = []
         costs = {}
@@ -558,16 +574,19 @@ class CompositionInHouse(Composition):
                 solution[el] = pulp.value(
                     pulp.lpSum([tmp_state*oxi_vars[el+str(tmp_state)] for tmp_state in all_oxi_states[el]])
                 )/float(all_el_amts[el])
+                for tmp_state in all_oxi_states[el]:
+                    valence_detail[(el, tmp_state)] = pulp.value(oxi_vars[el+str(tmp_state)])
             score = pulp.value(problem.objective)
 
-        return solution, score
+        return solution, score, valence_detail
 
     def is_alloy(self):
         return all([Element(el).is_metal for el in self.get_el_amt_dict()])
 
     @staticmethod
     def get_most_possible_oxi_state_of_composition(composition,
-                                                   oxi_states_override=None):
+                                                   oxi_states_override=None,
+                                                   return_details=False):
         """
         a wrapper using the method oxi_state_guesses_most_possible to guess the most possible
         oxidation states based on the same method in pymatggen. The input can be a plain dict
@@ -576,6 +595,7 @@ class CompositionInHouse(Composition):
         :param composition: can be a plain dict or a plain string that pymatgen can interpret
         :param oxi_states_override: dict. dict of str->list to override an
                 element's common oxidation states, e.g. {"V": [2,3,4,5]}
+        :param return_details: bool. return number of each type of ions or not
         :return: (oxi_state, is_usual, comments)
             oxi_state: dict of oxidation state {el: valence}
             is_usual: bool. if True. The solution is the same as the default solution from
@@ -588,9 +608,13 @@ class CompositionInHouse(Composition):
         valence_comp = CompositionInHouse(composition)
         valence_comp, inte_factor = valence_comp.get_integer_formula_and_factor()
         valence_comp = CompositionInHouse(valence_comp)
-        oxi_state, is_usual, comments = valence_comp.oxi_state_guesses_most_possible(
-            oxi_states_override=oxi_states_override
+        oxi_state, is_usual, comments, oxi_details = valence_comp.oxi_state_guesses_most_possible(
+            oxi_states_override=oxi_states_override,
+            return_details = True
         )
-        return oxi_state, is_usual, comments
+        if return_details:
+            return oxi_state, is_usual, comments, oxi_details
+        else:
+            return oxi_state, is_usual, comments
 
 
