@@ -302,13 +302,16 @@ class CompositionInHouse(Composition):
 
         return all_sols
 
-    def oxi_state_guesses_most_possible(self):
+    def oxi_state_guesses_most_possible(self,
+                                        oxi_states_override=None):
         """
         guess the most possible oxidation states based on the same method in pymatggen.
         linear programming is used to accelerate the computation.
         relaxation assuptions are adopted when there is no solution using default solver in pymatgen.
 
         :param composition: can be a plain dict or a plain string that pymatgen can interpret
+        :param oxi_states_override: dict. dict of str->list to override an
+                element's common oxidation states, e.g. {"V": [2,3,4,5]}
         :return: (oxi_state, is_usual, comments)
             oxi_state: dict of oxidation state {el: valence}
             is_usual: bool. if True. The solution is the same as the default solution from
@@ -325,6 +328,7 @@ class CompositionInHouse(Composition):
         # solution same as pymatgen, but much faster,
         # so that we can do relaxation if no solution found
         oxi_state = self._oxi_state_guesses_most_possible(
+            oxi_states_override=oxi_states_override,
             all_metal_oxi_states=False,
             all_oxi_states=False,
             add_compensator=False,
@@ -342,6 +346,7 @@ class CompositionInHouse(Composition):
         # solve again with relaxation
         if len(oxi_state) == 0:
             oxi_state = self._oxi_state_guesses_most_possible(
+                oxi_states_override=oxi_states_override,
                 all_metal_oxi_states=True,
                 all_oxi_states=False,
                 add_compensator=True,
@@ -366,6 +371,7 @@ class CompositionInHouse(Composition):
             else:
                 # solve again by doubling the amount in case there is a valence skipping effect
                 oxi_state = self._oxi_state_guesses_most_possible(
+                    oxi_states_override=oxi_states_override,
                     all_metal_oxi_states=True,
                     all_oxi_states=False,
                     add_compensator=True,
@@ -560,13 +566,16 @@ class CompositionInHouse(Composition):
         return all([Element(el).is_metal for el in self.get_el_amt_dict()])
 
     @staticmethod
-    def get_most_possible_oxi_state_of_composition(composition):
+    def get_most_possible_oxi_state_of_composition(composition,
+                                                   oxi_states_override=None):
         """
         a wrapper using the method oxi_state_guesses_most_possible to guess the most possible
         oxidation states based on the same method in pymatggen. The input can be a plain dict
         or a plain string that pymatgen can interpret
 
         :param composition: can be a plain dict or a plain string that pymatgen can interpret
+        :param oxi_states_override: dict. dict of str->list to override an
+                element's common oxidation states, e.g. {"V": [2,3,4,5]}
         :return: (oxi_state, is_usual, comments)
             oxi_state: dict of oxidation state {el: valence}
             is_usual: bool. if True. The solution is the same as the default solution from
@@ -579,7 +588,9 @@ class CompositionInHouse(Composition):
         valence_comp = CompositionInHouse(composition)
         valence_comp, inte_factor = valence_comp.get_integer_formula_and_factor()
         valence_comp = CompositionInHouse(valence_comp)
-        oxi_state, is_usual, comments = valence_comp.oxi_state_guesses_most_possible()
+        oxi_state, is_usual, comments = valence_comp.oxi_state_guesses_most_possible(
+            oxi_states_override=oxi_states_override
+        )
         return oxi_state, is_usual, comments
 
 
