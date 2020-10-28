@@ -266,6 +266,14 @@ class CompositionInHouse(Composition):
         for idx, el in enumerate(els):
             el_sum_scores[idx] = {}
             el_sums.append([])
+            # Attention: this is to keep the same as pymatgen when searching for all possible solutions
+            # However, the original solution is not complete because it selects
+            # the solution with highest probability for each sum value for each element,
+            # which is what implemented here.
+            # To get the really all possible solutions regardless of probability,
+            # we can use linear programing without optimization
+            # (or optimization for a constant objective function),
+            # which returns all points on the boundary
             all_sums, sum_scores = CompositionInHouse.get_possible_sums(
                 el,
                 all_oxids[el],
