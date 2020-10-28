@@ -1,12 +1,4 @@
-from itertools import product
-import os
-from collections import defaultdict
-from monty.serialization import loadfn
-from six.moves import zip
-from functools import total_ordering
-
-from pymatgen.core.periodic_table import Element, Specie
-from pymatgen import Composition
+from pymatgen.core.periodic_table import Element
 
 import pulp
 
