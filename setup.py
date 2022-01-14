@@ -15,6 +15,7 @@ if __name__ == "__main__":
               "sympy",
               "unidecode",
               "pymatgen",
+              "pulp",
           ],
           zip_safe=False)
 

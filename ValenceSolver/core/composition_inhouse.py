@@ -9,7 +9,7 @@ from six.moves import zip
 from functools import total_ordering
 
 from pymatgen.core.periodic_table import Element, Specie
-from pymatgen import Composition
+from pymatgen.core import Composition
 
 import pulp
 
