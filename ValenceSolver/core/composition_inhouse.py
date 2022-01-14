@@ -351,6 +351,9 @@ class CompositionInHouse(Composition):
             oxi_state = [
                 {el: 0.0 for el in el_amt}
             ]
+            oxi_details = [
+                {(el, 0): el_amt[el] for el in el_amt}
+            ]
             is_usual = False
             comments = ['is alloy']
 
@@ -380,6 +383,11 @@ class CompositionInHouse(Composition):
                 is_usual = True
                 oxi_state[0]['O'] = -1.0
                 del oxi_state[0]['X']
+                oxi_details[0][('O', -1)] = el_amt['O']
+                del oxi_details[0][('O', -2)]
+                for k in list(oxi_details[0].keys()):
+                    if k[0] == 'X':
+                        del oxi_details[0][k]
             else:
                 # solve again by doubling the amount in case there is a valence skipping effect
                 oxi_state, oxi_details = self._oxi_state_guesses_most_possible(
@@ -477,7 +485,7 @@ class CompositionInHouse(Composition):
         # elementary materials are not solved but the valence should be 0
         if not all_sols and len(els) == 1:
             all_sols = [{el:0.0 for el in els}]
-            all_details = [{el: el_amt[el] for el in els}]
+            all_details = [{(el, 0): el_amt[el] for el in els}]
         if return_details:
             return all_sols, all_details
         else:
