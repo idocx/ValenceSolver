@@ -20,6 +20,7 @@ def dictOrdered(unordered_dict):
 def is_alloy(composition):
     return all([Element(el).is_metal for el in composition])
 
+# TODO: this seems to be an old function and to be removed
 def get_valence_single_composition(composition,
                                    all_metal_oxi_states=False,
                                    all_oxi_states=False,
@@ -33,8 +34,6 @@ def get_valence_single_composition(composition,
     valence_comp = CompositionInHouse(composition)
     valence_comp, inte_factor = valence_comp.get_integer_formula_and_factor()
     valence_comp = CompositionInHouse(valence_comp)
-
-
 
     oxi_state_2 = valence_comp._oxi_state_guesses_most_possible(
         all_metal_oxi_states=all_metal_oxi_states,

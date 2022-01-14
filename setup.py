@@ -14,6 +14,7 @@ if __name__ == "__main__":
           install_requires=[
               "sympy",
               "unidecode",
+              "pymatgen",
           ],
           zip_safe=False)
 

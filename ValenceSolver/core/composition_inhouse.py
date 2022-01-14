@@ -506,12 +506,12 @@ class CompositionInHouse(Composition):
             }
 
         # definition of problem
-        problem = pulp.LpProblem('score maximization problem', pulp.LpMaximize)
+        problem = pulp.LpProblem('score_maximization_problem', pulp.LpMaximize)
         # definition of variables
         oxi_vars = pulp.LpVariable.dicts('oxi_states', oxi_names, lowBound=0, cat=pulp.LpInteger)
         # objective function
         problem += pulp.lpSum([costs[i]*oxi_vars[i] for i in oxi_names]), \
-                   'total probability of valence combination for one element'
+                   'total_probability_of_valence_combination_for_one_element'
         # constraints
         problem += pulp.lpSum([oxi_vars[i] for i in oxi_names]) == el_amt, 'numberOfElements'
         problem += pulp.lpSum(
@@ -523,7 +523,7 @@ class CompositionInHouse(Composition):
             problem.constraints['sumOfValence'] = pulp.lpSum(
                 [oxi_states[i]*oxi_vars[oxi_names[i]] for i in range(len(oxi_states))]
             ) == tmp_sum
-            problem.solve()
+            problem.solve(pulp.PULP_CBC_CMD(msg=False))
             if pulp.LpStatus[problem.status] == 'Optimal':
                 all_sums.append(tmp_sum)
                 sum_scores.append(pulp.value(problem.objective))
@@ -561,12 +561,12 @@ class CompositionInHouse(Composition):
                 costs['X-1'] = 1
 
         # definition of problem
-        problem = pulp.LpProblem('score maximization problem', pulp.LpMaximize)
+        problem = pulp.LpProblem('score_maximization_problem', pulp.LpMaximize)
         # definition of variables
         oxi_vars = pulp.LpVariable.dicts('oxi_states', oxi_names, lowBound=0, cat=pulp.LpInteger)
         # objective function
         problem += pulp.lpSum([costs[i]*oxi_vars[i] for i in oxi_names]), \
-                   'total probability of valence combination for one element'
+                   'total_probability_of_valence_combination_for_one_element'
         # constraints
         for el in all_els:
             problem += pulp.lpSum(
@@ -576,7 +576,7 @@ class CompositionInHouse(Composition):
             [tmp_state*oxi_vars[el+str(tmp_state)] for el in all_els for tmp_state in all_oxi_states[el]
              ]) == target_charge, 'sumOfValence'
 
-        problem.solve()
+        problem.solve(pulp.PULP_CBC_CMD(msg=False))
         if pulp.LpStatus[problem.status] == 'Optimal':
             for el in all_els:
                 solution[el] = pulp.value(
