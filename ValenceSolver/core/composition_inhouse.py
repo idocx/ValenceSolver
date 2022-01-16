@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, unicode_literals
 
+import pdb
 from itertools import product
 import os
 from collections import defaultdict
@@ -622,12 +623,18 @@ class CompositionInHouse(Composition):
             comments: list of strings. Details when is_usual == False.
         """
         valence_comp = CompositionInHouse(composition)
-        valence_comp, inte_factor = valence_comp.get_integer_formula_and_factor()
-        valence_comp = CompositionInHouse(valence_comp)
-        oxi_state, is_usual, comments, oxi_details = valence_comp.oxi_state_guesses_most_possible(
-            oxi_states_override=oxi_states_override,
-            return_details = True
-        )
+        if len(valence_comp) > 0:
+            valence_comp, inte_factor = valence_comp.get_integer_formula_and_factor()
+            valence_comp = CompositionInHouse(valence_comp)
+            oxi_state, is_usual, comments, oxi_details = valence_comp.oxi_state_guesses_most_possible(
+                oxi_states_override=oxi_states_override,
+                return_details = True
+            )
+        else:
+            oxi_state = []
+            is_usual = False
+            comments = []
+            oxi_details = []
         if return_details:
             return oxi_state, is_usual, comments, oxi_details
         else:
