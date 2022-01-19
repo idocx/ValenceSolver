@@ -408,6 +408,8 @@ class CompositionInHouse(Composition):
             if abs(oxi_state[0]['X']) > CompositionInHouse.X_valence_warning_level:
                 comments.append('Warning: the input composition might be wrong')
             del oxi_state[0]['X']
+            if ('X', 0) in oxi_details[0]:
+                del oxi_details[0][('X', 0)]
         if return_details:
             return oxi_state, is_usual, comments, oxi_details
         else:
