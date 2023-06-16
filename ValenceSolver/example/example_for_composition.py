@@ -38,6 +38,38 @@ def get_valence_datafile_format():
 
 
 if __name__ == '__main__':
+    print(
+        CompositionInHouse.get_most_possible_oxi_state_of_composition(
+            'KClO3',
+            all_oxi_states=True,
+            # oxi_states_override={
+            #     'K': [1,],
+            #     'Cl': [-1, 1, 3, 5 7],
+            #     'O': [-2,],
+            # }
+        )
+    )
+    print(
+        CompositionInHouse.get_most_possible_oxi_state_of_composition(
+            'EuBrO2',
+            all_oxi_states=True,
+            # oxi_states_override={
+            #     'Eu': [2,3],
+            #     'Br': [-1, 1, 3, 5, 7],
+            #     'O': [-2,],
+            # }
+        )
+    )
+    print(
+        CompositionInHouse.get_most_possible_oxi_state_of_composition('La200Mg100Mn(Ge33O200)3')
+    )
+    print(
+        CompositionInHouse.get_most_possible_oxi_state_of_composition('Sr63577Mn70641Bi7064O211923')
+    )
+    print(
+        CompositionInHouse.get_most_possible_oxi_state_of_composition('Li118358Mn106522Fe11836P118358O473431')
+    )
+
     composition = {
         "Y": 1.0,
         "Fe": 1.0,

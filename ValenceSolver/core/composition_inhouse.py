@@ -311,9 +311,12 @@ class CompositionInHouse(Composition):
 
         return all_sols
 
-    def oxi_state_guesses_most_possible(self,
-                                        oxi_states_override=None,
-                                        return_details=False):
+    def oxi_state_guesses_most_possible(
+        self,
+        oxi_states_override=None,
+        return_details=False,
+        all_oxi_states=False,
+    ):
         """
         guess the most possible oxidation states based on the same method in pymatggen.
         linear programming is used to accelerate the computation.
@@ -341,7 +344,7 @@ class CompositionInHouse(Composition):
         oxi_state, oxi_details = self._oxi_state_guesses_most_possible(
             oxi_states_override=oxi_states_override,
             all_metal_oxi_states=False,
-            all_oxi_states=False,
+            all_oxi_states=all_oxi_states,
             add_compensator=False,
             double_el_amt=False,
             return_details=True,
@@ -363,7 +366,7 @@ class CompositionInHouse(Composition):
             oxi_state, oxi_details = self._oxi_state_guesses_most_possible(
                 oxi_states_override=oxi_states_override,
                 all_metal_oxi_states=True,
-                all_oxi_states=False,
+                all_oxi_states=all_oxi_states,
                 add_compensator=True,
                 double_el_amt=False,
                 return_details=True,
@@ -394,7 +397,7 @@ class CompositionInHouse(Composition):
                 oxi_state, oxi_details = self._oxi_state_guesses_most_possible(
                     oxi_states_override=oxi_states_override,
                     all_metal_oxi_states=True,
-                    all_oxi_states=False,
+                    all_oxi_states=all_oxi_states,
                     add_compensator=True,
                     double_el_amt=True,
                     return_details=True,
@@ -415,15 +418,17 @@ class CompositionInHouse(Composition):
         else:
             return oxi_state, is_usual, comments
 
-    def _oxi_state_guesses_most_possible(self,
-                                        oxi_states_override=None,
-                                        target_charge=0,
-                                        all_metal_oxi_states=False,
-                                        all_oxi_states=False,
-                                        max_sites=None,
-                                        add_compensator=False,
-                                        double_el_amt=False,
-                                        return_details=False):
+    def _oxi_state_guesses_most_possible(
+        self,
+        oxi_states_override=None,
+        target_charge=0,
+        all_metal_oxi_states=False,
+        all_oxi_states=False,
+        max_sites=None,
+        add_compensator=False,
+        double_el_amt=False,
+        return_details=False,
+    ):
         """
         Checks if the composition is charge-balanced and returns back all
         charge-balanced oxidation state combinations. Composition must have
@@ -603,9 +608,12 @@ class CompositionInHouse(Composition):
         return all([Element(el).is_metal for el in self.get_el_amt_dict()])
 
     @staticmethod
-    def get_most_possible_oxi_state_of_composition(composition,
-                                                   oxi_states_override=None,
-                                                   return_details=False):
+    def get_most_possible_oxi_state_of_composition(
+        composition,
+        oxi_states_override=None,
+        return_details=False,
+        all_oxi_states=False,
+    ):
         """
         a wrapper using the method oxi_state_guesses_most_possible to guess the most possible
         oxidation states based on the same method in pymatggen. The input can be a plain dict
@@ -630,7 +638,8 @@ class CompositionInHouse(Composition):
             valence_comp = CompositionInHouse(valence_comp)
             oxi_state, is_usual, comments, oxi_details = valence_comp.oxi_state_guesses_most_possible(
                 oxi_states_override=oxi_states_override,
-                return_details = True
+                return_details=True,
+                all_oxi_states=all_oxi_states,
             )
         else:
             oxi_state = []
