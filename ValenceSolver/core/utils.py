@@ -4,10 +4,12 @@ from unidecode import unidecode
 import collections
 from sympy.parsing.sympy_parser import parse_expr
 from copy import deepcopy
-
-from Synthepedia.concepts.materials.complex import GeneralComposition
-from .composition_inhouse import CompositionInHouse
+import pkgutil
 from pymatgen.core.periodic_table import Element
+from .composition_inhouse import CompositionInHouse
+
+if pkgutil.find_loader('Synthepedia'):
+    from Synthepedia.concepts.materials.complex import GeneralComposition
 
 __author__ = 'Tanjin He'
 __maintainer__ = 'Tanjin He'
@@ -230,7 +232,7 @@ def to_GeneralMat_obj(composition, amounts_vars={}, elements_vars={}):
         
     # get GeneralComposition object
     try:
-        mat_obj =  GeneralComposition(
+        mat_obj = GeneralComposition(
             composition=composition, 
             contain_vars=contain_vars, 
             fraction_vars=fraction_vars, 
