@@ -108,7 +108,7 @@ class CompositionInHouse(Composition):
                                       dirname(os.path.abspath(__file__)))
             all_data = loadfn(os.path.join(module_dir,
                                            "analysis", "icsd_bv.yaml"))
-            Composition.oxi_prob = {Specie.from_string(sp): data
+            Composition.oxi_prob = {Specie.from_str(sp): data
                                     for sp, data in
                                     all_data["occurrence"].items()}
 
