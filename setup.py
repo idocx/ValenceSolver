@@ -11,11 +11,13 @@ if __name__ == "__main__":
           author_email="tanjin_he@berkeley.edu",
           license="MIT License",
           packages=find_packages(),
+          package_data={'ValenceSolver': ['core/analysis/icsd_bv.yaml']},
           install_requires=[
               "sympy",
               "unidecode",
               "pymatgen",
               "pulp",
           ],
+          
           zip_safe=False)
 
